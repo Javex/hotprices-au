@@ -70,6 +70,9 @@ class WooliesAPI:
                 # We're done
                 break
 
+            # Temporary speedup
+            break
+
             # Not done, go to next page
             request_data['pageNumber'] += 1
 
