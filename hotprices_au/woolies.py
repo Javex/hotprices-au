@@ -1,8 +1,7 @@
 import requests
 import json
-import sys
-import pathlib
-from datetime import datetime
+
+from . import output
 
 
 class WooliesAPI:
@@ -88,31 +87,7 @@ class WooliesAPI:
         return categories
 
 
-def load_cache():
-    with open('woolies_all.json') as f:
-        cache_data = json.loads(f.read())
-    return cache_data
-
-
-def save_cache(cache_data):
-    with open('woolies_all.json', 'w') as f:
-        f.write(json.dumps(cache_data))
-
-
-def save_data(categories):
-    now = datetime.now()
-    date_str = now.strftime("%Y-%m-%d")
-    fname = f"{date_str}.json"
-    save_dir = pathlib.Path(f"woolies")
-    save_dir.mkdir(exist_ok=True)
-    fpath = save_dir / fname
-    fpath.write_text(json.dumps(categories))
-
-
-def main():
-    quick = False
-    if len(sys.argv) > 1 and sys.argv[1] == "--quick":
-        quick = True
+def main(quick):
     woolies = WooliesAPI(quick=quick)
     categories = woolies.get_categories()
     #categories = load_cache()
@@ -137,9 +112,7 @@ def main():
 
         if quick:
             break
-        #save_cache(categories)
-    save_data(categories)
-    #print(json.dumps(category, indent=4))
+    output.save_data('woolies', categories)
 
 
 if __name__ == '__main__':

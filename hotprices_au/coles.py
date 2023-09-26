@@ -1,9 +1,10 @@
 import requests
 import json
-import sys
 import pathlib
 from datetime import datetime
 from bs4 import BeautifulSoup
+
+from . import output
 
 
 class ColesScraper:
@@ -71,20 +72,7 @@ class ColesScraper:
         return categories
 
 
-def save_data(categories):
-    now = datetime.now()
-    date_str = now.strftime("%Y-%m-%d")
-    fname = f"{date_str}.json"
-    save_dir = pathlib.Path(f"coles")
-    save_dir.mkdir(exist_ok=True)
-    fpath = save_dir / fname
-    fpath.write_text(json.dumps(categories))
-
-
-def main():
-    quick = False
-    if len(sys.argv) > 1 and sys.argv[1] == "--quick":
-        quick = True
+def main(quick):
     coles = ColesScraper(store_id='0584', quick=quick)
     categories = coles.get_categories()
     #categories = load_cache()
@@ -108,7 +96,7 @@ def main():
         if quick:
             break
         #save_cache(categories)
-    save_data(categories)
+    output.save_data('coles', categories)
     #print(json.dumps(category, indent=4))
 
 
