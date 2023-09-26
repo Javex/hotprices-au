@@ -1,6 +1,8 @@
 name: Scrape Woolies
 on:
-- push
+  push:
+  schedule:
+  - cron: "0 1 * * *"  # Daily at 1am UTC (12pm AEST)
 jobs:
   scrape-woolies:
     runs-on: ubuntu-latest
