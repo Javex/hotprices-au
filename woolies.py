@@ -1,6 +1,8 @@
 import requests
 import json
 import sys
+import pathlib
+from datetime import datetime
 
 
 class WooliesAPI:
@@ -97,6 +99,16 @@ def save_cache(cache_data):
         f.write(json.dumps(cache_data))
 
 
+def save_data(categories):
+    now = datetime.now()
+    date_str = now.strftime("%Y-%m-%d")
+    fname = f"{date_str}.json"
+    save_dir = pathlib.Path(f"woolies")
+    save_dir.mkdir(exist_ok=True)
+    fpath = save_dir / fname
+    fpath.write_text(json.dumps(categories))
+
+
 def main():
     quick = False
     if len(sys.argv) > 1 and sys.argv[1] == "--quick":
@@ -126,8 +138,7 @@ def main():
         if quick:
             break
         #save_cache(categories)
-    with open('woolies_all.json', 'w') as f:
-        f.write(json.dumps(categories))
+    save_data(categories)
     #print(json.dumps(category, indent=4))
 
 
