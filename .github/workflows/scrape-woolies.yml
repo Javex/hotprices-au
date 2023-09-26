@@ -1,0 +1,13 @@
+name: Scrape Woolies
+on:
+- push
+jobs:
+    scrape-woolies:
+        runs-on: ubuntu-latest
+        steps:
+            - run: pip3 install -r requirements.txt
+            - run: python3 woolies.py
+            - uses: actions/upload-artifact@v3
+              with:
+                name: woolies_all
+                path: ./woolies_all.json
