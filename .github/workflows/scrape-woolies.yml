@@ -8,6 +8,7 @@ env:
 jobs:
   scrape-woolies:
     permissions:
+      contents: read  # Required for checkout action
       id-token: write # This is required for requesting the JWT
     runs-on: ubuntu-latest
     steps:
