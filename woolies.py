@@ -1,11 +1,12 @@
 import requests
 import json
+import sys
 
 
 class WooliesAPI:
 
-    def __init__(self):
-
+    def __init__(self, quick=False):
+        self.quick = quick
 
 
         self.session = requests.Session()
@@ -71,7 +72,8 @@ class WooliesAPI:
                 break
 
             # Temporary speedup
-            break
+            if self.quick:
+                break
 
             # Not done, go to next page
             request_data['pageNumber'] += 1
@@ -96,7 +98,10 @@ def save_cache(cache_data):
 
 
 def main():
-    woolies = WooliesAPI()
+    quick = False
+    if len(sys.argv) > 1 and sys.argv[1] == "--quick":
+        quick = True
+    woolies = WooliesAPI(quick=quick)
     categories = woolies.get_categories()
     #categories = load_cache()
     for category_obj in categories:
@@ -117,6 +122,9 @@ def main():
         category = woolies.get_category(cat_id)
         all_category_bundles = list(category)
         category_obj['Products'] = all_category_bundles
+
+        if quick:
+            break
         #save_cache(categories)
     with open('woolies_all.json', 'w') as f:
         f.write(json.dumps(categories))
