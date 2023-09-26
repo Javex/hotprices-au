@@ -5,6 +5,7 @@ jobs:
     scrape-woolies:
         runs-on: ubuntu-latest
         steps:
+            - uses: actions/checkout@v4
             - run: pip3 install -r requirements.txt
             - run: python3 woolies.py
             - uses: actions/upload-artifact@v3
