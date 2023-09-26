@@ -39,7 +39,11 @@ class ColesScraper:
         while True:
             print(f'Page {params["page"]}')
             response = self.session.get(f'https://www.coles.com.au/_next/data/20230922.01_v3.52.0/en/browse/{cat_slug}.json', params=params)
-            response.raise_for_status()
+            try:
+                response.raise_for_status()
+            except requests.HTTPError:
+                print(response.text)
+                raise
             response_data = response.json()
             search_results = response_data['pageProps']['searchResults']
             for result in search_results['results']:
