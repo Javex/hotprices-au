@@ -18,7 +18,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: woolies_snapshot
-          path: ./output/woolies/*.json
+          path: ./output/woolies/
       - name: Configure AWS Credentials
         if: ${{ github.event_name == 'schedule' }}
         uses: aws-actions/configure-aws-credentials@v4
@@ -39,7 +39,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: coles_snapshot
-          path: ./output/coles/*.json
+          path: ./output/coles/
       - name: Configure AWS Credentials
         if: ${{ github.event_name == 'schedule' }}
         uses: aws-actions/configure-aws-credentials@v4
