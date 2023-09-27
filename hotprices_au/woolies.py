@@ -1,7 +1,7 @@
 import requests
 import json
 
-from . import output
+from . import output, request
 
 
 class WooliesAPI:
@@ -10,7 +10,7 @@ class WooliesAPI:
         self.quick = quick
 
 
-        self.session = requests.Session()
+        self.session = request.get_base_session()
         self.session.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36',
             'Origin': 'https://www.woolworths.com.au',

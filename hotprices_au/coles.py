@@ -4,7 +4,7 @@ import pathlib
 from datetime import datetime
 from bs4 import BeautifulSoup
 
-from . import output
+from . import output, request
 
 
 class ColesScraper:
@@ -13,7 +13,7 @@ class ColesScraper:
         self.quick = quick
         self.store_id = store_id
 
-        self.session = requests.Session()
+        self.session = request.get_base_session()
         self.session.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36',
             'Origin': 'https://www.coles.com.au',
