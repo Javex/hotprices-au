@@ -8,7 +8,6 @@ def get_base_session():
     retry = Retry(
         total=10,
         backoff_factor=1,
-        backoff_max=60,
         status_forcelist=[403],
         allowed_methods=['GET', 'POST'],
     )
