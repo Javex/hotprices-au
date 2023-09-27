@@ -1,6 +1,6 @@
 name: Scrape Groceries
 on:
-  push:
+  workflow_dispatch:
   schedule:
   - cron: "0 1 * * *"  # Daily at 1am UTC (12pm AEST)
 env:
@@ -20,13 +20,11 @@ jobs:
           name: woolies_snapshot
           path: ./output/woolies/
       - name: Configure AWS Credentials
-        if: ${{ github.event_name == 'schedule' }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: "${{ vars.TARGET_ROLE_ARN }}"
           aws-region: ap-southeast-2
       - run: aws s3 sync ./output/woolies/ s3://grocery-scrape-au/woolies/
-        if: ${{ github.event_name == 'schedule' }}
   scrape-coles:
     permissions:
       contents: read  # Required for checkout action
@@ -41,10 +39,8 @@ jobs:
           name: coles_snapshot
           path: ./output/coles/
       - name: Configure AWS Credentials
-        if: ${{ github.event_name == 'schedule' }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: "${{ vars.TARGET_ROLE_ARN }}"
           aws-region: ap-southeast-2
       - run: aws s3 sync ./output/coles/ s3://grocery-scrape-au/coles/
-        if: ${{ github.event_name == 'schedule' }}

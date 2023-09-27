@@ -1,0 +1,24 @@
+name: Quick scrape test
+on:
+  push:
+jobs:
+  scrape-woolies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip3 install -r requirements.txt
+      - run: python3 main.py --quick woolies
+      - uses: actions/upload-artifact@v3
+        with:
+          name: woolies_snapshot
+          path: ./output/woolies/
+  scrape-coles:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip3 install -r requirements.txt
+      - run: python3 main.py --quick coles
+      - uses: actions/upload-artifact@v3
+        with:
+          name: coles_snapshot
+          path: ./output/coles/
