@@ -41,6 +41,7 @@ def dedup_items(items):
 def transform_data(day):
     all_items = []
     for store in sites.sites.keys():
+        store_items = []
         raw_categories = output.load_data(store, day=day)
         for category in raw_categories:
             try:
@@ -51,7 +52,12 @@ def transform_data(day):
 
             canonical_items = get_canoncial_for(store, raw_items, day.strftime('%Y-%m-%d'))
             items = dedup_items(canonical_items)
-            all_items += items
+            store_items += items
+
+        latest_canonical_file_store = pathlib.Path(f"hotprices_au/static/data/latest-canonical.{store}.compressed.json")
+        latest_canonical_file_store.write_text(json.dumps(store_items))
+
+        all_items += store_items
     
     latest_canonical_file = pathlib.Path(f"output/latest-canonical.json.gz")
     with gzip.open(latest_canonical_file, 'wt') as fp:
