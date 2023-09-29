@@ -1,0 +1,32 @@
+{
+  "name": "heissepreise",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development PORT=$PORT node --max_old_space_size=8192 --trace-warnings server.js",
+    "start": "cross-env NODE_ENV=production PORT=$PORT node --max_old_space_size=8192 server.js",
+    "format": "npx prettier --write ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/badlogic/heissepreise.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/badlogic/heissepreise/issues"
+  },
+  "homepage": "https://github.com/badlogic/heissepreise#readme",
+  "dependencies": {
+    "alasql": "^4.0.4",
+    "chart.js": "^4.3.0",
+    "chartjs-adapter-moment": "^1.0.1",
+    "chokidar": "^3.5.3",
+    "moment": "^2.29.4"
+  },
+  "devDependencies": {
+    "esbuild": "^0.17.19",
+    "tailwindcss": "^3.3.2"
+  }
+}
