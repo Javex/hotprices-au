@@ -87,7 +87,7 @@ class WooliesAPI:
         return categories
 
 
-def get_canonical(item):
+def get_canonical(item, today):
     if len(item['Products']) > 1:
         raise RuntimeError("More than one product, help")
     item = item['Products'][0]
@@ -113,6 +113,10 @@ def get_canonical(item):
         'name': item['Name'],
         'description': item['Description'],
         'price': price,
+        'priceHistory': [{
+            'date': today,
+            'price': price,
+        }],
         'isWeighted': False,  # TODO: What is this and how do I find it in woolies data?
     }
 

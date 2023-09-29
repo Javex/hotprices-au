@@ -71,7 +71,7 @@ class ColesScraper:
         categories = category_data['catalogGroupView']
         return categories
 
-def get_canonical(item):
+def get_canonical(item, today):
     if item['_type'] == 'SINGLE_TILE' and item.get('adId'):
         # Ad tile, not a product
         return None
@@ -81,7 +81,10 @@ def get_canonical(item):
         'name': item['name'],
         'description': item['description'],
         'price': item['pricing']['now'],
-        # 'priceHistory': []
+        'priceHistory': [{
+            'date': today,
+            'price': item['pricing']['now'],
+        }],
         'isWeighted': item['pricing']['unit']['isWeighted'],
         'unit': item['pricing']['unit']['ofMeasureUnits'],
         'quantity': item['pricing']['unit']['quantity'],

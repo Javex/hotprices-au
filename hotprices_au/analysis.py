@@ -7,11 +7,11 @@ from .logging import logger
 from . import output, sites
 
 
-def get_canoncial_for(store, raw_items):
+def get_canoncial_for(store, raw_items, today):
     canonical_items = []
     for raw_item in raw_items:
         try:
-            canonical_item = sites.sites[store].get_canonical(raw_item)
+            canonical_item = sites.sites[store].get_canonical(raw_item, today)
         except Exception:
             logger.exception(f"Unable to process store '{store}' item: {raw_item}")
             continue
@@ -49,7 +49,7 @@ def transform_data(day):
                 # Don't have items for this category
                 continue
 
-            canonical_items = get_canoncial_for(store, raw_items)
+            canonical_items = get_canoncial_for(store, raw_items, day.strftime('%Y-%m-%d'))
             items = dedup_items(canonical_items)
             all_items += items
     
