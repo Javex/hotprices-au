@@ -1,7 +1,7 @@
 import requests
 import json
 
-from . import output, request
+from .. import output, request, units
 
 
 class WooliesAPI:
@@ -87,6 +87,64 @@ class WooliesAPI:
         return categories
 
 
+def get_canonical(item):
+    if len(item['Products']) > 1:
+        raise RuntimeError("More than one product, help")
+    item = item['Products'][0]
+
+    # If item is out of stock then price might be empty so we need to take the "WasPrice" field
+    price = item['CupPrice']
+    unit = item['CupMeasure']
+    if price is None:
+        price = item['Price']
+        unit = item['PackageSize']
+
+    if price is None:
+        price_was = item['WasPrice']
+        if not item['IsInStock'] and price_was:
+            price = price_was
+
+    # Price is still None, can't do anything, skipping product
+    if price is None:
+        return None
+
+    result = {
+        'id': item['Stockcode'],
+        'name': item['Name'],
+        'description': item['Description'],
+        'price': price,
+        'isWeighted': False,  # TODO: What is this and how do I find it in woolies data?
+    }
+
+    try:
+        quantity, unit = units.parse_str_unit(unit)
+    except RuntimeError:
+        # Not in stock and we can't use "WasPrice" because we can't parse the weird unit it uses.
+        # No idea what the right price would be so just skip the product
+        if not item['IsInStock']:
+            return None
+        elif item['Unit'].lower() == "each":
+            unit = 'ea'
+            quantity = 1
+        else:
+            print(f"Can't parse unit '{unit}' for item {result}")
+            return None
+    result['unit'] = unit
+    result['quantity'] = quantity
+    try:
+        result = units.convert_unit(result)
+    except KeyError:
+        # Wrong data, fix manually
+        if result['name'] == 'Kahlua White Russian' and result['unit'] == 'mm':
+            result['unit'] = 'ml'
+        elif result['name'] == 'Nelson County Bourbon & Cola' and result['unit'] == 'nl':
+            result['unit'] = 'ml'
+        else:
+            raise
+    return result
+
+
+
 def main(quick):
     woolies = WooliesAPI(quick=quick)
     categories = woolies.get_categories()
@@ -112,7 +170,7 @@ def main(quick):
 
         if quick:
             break
-    output.save_data('woolies', categories)
+    output.save_data('woolies', categories, quick)
 
 
 if __name__ == '__main__':

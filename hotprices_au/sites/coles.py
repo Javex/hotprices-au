@@ -4,7 +4,7 @@ import pathlib
 from datetime import datetime
 from bs4 import BeautifulSoup
 
-from . import output, request
+from .. import output, request, units
 
 
 class ColesScraper:
@@ -71,6 +71,27 @@ class ColesScraper:
         categories = category_data['catalogGroupView']
         return categories
 
+def get_canonical(item):
+    if item['_type'] == 'SINGLE_TILE' and item.get('adId'):
+        # Ad tile, not a product
+        return None
+
+    result = {
+        'id': item['id'],
+        'name': item['name'],
+        'description': item['description'],
+        'price': item['pricing']['now'],
+        # 'priceHistory': []
+        'isWeighted': item['pricing']['unit']['isWeighted'],
+        'unit': item['pricing']['unit']['ofMeasureUnits'],
+        'quantity': item['pricing']['unit']['quantity'],
+        # 'organic': 
+    }
+    result = units.convert_unit(result)
+    if result['unit'] != 'g':
+        raise RuntimeError("Unknown unit pls handle")
+    return result
+
 
 def main(quick):
     coles = ColesScraper(store_id='0584', quick=quick)
@@ -96,7 +117,7 @@ def main(quick):
         if quick:
             break
         #save_cache(categories)
-    output.save_data('coles', categories)
+    output.save_data('coles', categories, quick)
     #print(json.dumps(category, indent=4))
 
 

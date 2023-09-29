@@ -4,19 +4,42 @@ import gzip
 from datetime import datetime
 
 
-def save_data(store, categories, compression='gzip'):
-    now = datetime.now()
-    date_str = now.strftime("%Y-%m-%d")
+def get_save_path(store, quick, compression, day=None):
+    if day is None:
+        day = datetime.now()
+    date_str = day.strftime("%Y-%m-%d")
+
+    if quick:
+        date_str += "-sample"
     fname = f"{date_str}.json"
     save_dir = pathlib.Path(f"output/{store}")
     save_dir.mkdir(parents=True, exist_ok=True)
     fpath = save_dir / fname
-
     if compression == 'gzip':
         fpath = fpath.with_suffix('.json.gz')
+    return fpath
+
+
+def save_data(store, categories, quick=False, compression='gzip'):
+    fpath = get_save_path(store, quick, compression)
+    if compression == 'gzip':
         with gzip.open(fpath, 'wt') as fp:
             fp.write(json.dumps(categories))
     elif compression is None:
         fpath.write_text(json.dumps(categories))
     else:
         raise RuntimeError(f"Unsupported compression '{compression}'")
+
+
+def load_data(store, quick=False, compression='gzip', day=None):
+    fpath = get_save_path(store, quick, compression, day)
+    if compression == 'gzip':
+        with gzip.open(fpath, 'rt') as fp:
+            raw_data = fp.read()
+    elif compression is None:
+        raw_data = fpath.read_text()
+    else:
+        raise RuntimeError(f"Unsupported compression '{compression}'")
+
+    decoded_data = json.loads(raw_data)
+    return decoded_data

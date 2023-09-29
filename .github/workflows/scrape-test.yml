@@ -7,7 +7,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: pip3 install -r requirements.txt
-      - run: python3 main.py --quick woolies
+      - run: python3 main.py sync --quick woolies
       - uses: actions/upload-artifact@v3
         with:
           name: woolies_snapshot
@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: pip3 install -r requirements.txt
-      - run: python3 main.py --quick coles
+      - run: python3 main.py sync --quick coles
       - uses: actions/upload-artifact@v3
         with:
           name: coles_snapshot
