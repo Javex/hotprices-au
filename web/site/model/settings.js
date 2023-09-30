@@ -5,7 +5,7 @@ const { log } = require("../js/misc");
 class Settings extends Model {
     constructor() {
         super();
-        this.startDate = "2017-01-01";
+        this.startDate = "2023-09-26";
         this.chartType = "stepped";
         STORE_KEYS.forEach((store) => {
             this[store] = stores[store].defaultChecked;
