@@ -13,7 +13,7 @@ exports.stores = {
         budgetBrands: [],
         color: "red",
         defaultChecked: true,
-        getUrl: (item) => `${item.id}`,
+        getUrl: (item) => `https://www.coles.com.au/product/${item.id}`,
     },
 };
 

@@ -38,9 +38,12 @@ def dedup_items(items):
     return dedup_items
 
 
-def transform_data(day):
+def transform_data(day, store_filter=None):
     all_items = []
     for store in sites.sites.keys():
+        if store_filter is not None and store_filter != store:
+            # Skip if we only transform one store
+            continue
         store_items = []
         raw_categories = output.load_data(store, day=day)
         for category in raw_categories:

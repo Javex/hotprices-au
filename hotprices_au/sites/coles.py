@@ -1,3 +1,4 @@
+import re
 import requests
 import json
 import pathlib
@@ -76,6 +77,12 @@ def get_canonical(item, today):
         # Ad tile, not a product
         return None
 
+    if item['pricing'] is None:
+        # No pricing information, can't process
+        return None
+
+    quantity, unit = get_quantity_and_unit(item)
+
     result = {
         'id': item['id'],
         'name': item['name'],
@@ -85,15 +92,49 @@ def get_canonical(item, today):
             'date': today,
             'price': item['pricing']['now'],
         }],
-        'isWeighted': item['pricing']['unit']['isWeighted'],
-        'unit': item['pricing']['unit']['ofMeasureUnits'],
-        'quantity': item['pricing']['unit']['quantity'],
+        'isWeighted': item['pricing']['unit'].get('isWeighted', False),
+        'unit': unit,
+        'quantity': quantity,
         # 'organic': 
     }
     result = units.convert_unit(result)
-    if result['unit'] != 'g':
-        raise RuntimeError("Unknown unit pls handle")
     return result
+
+
+def get_quantity_and_unit(item):
+    # Try to get unit information from pricing data first
+    unit_data = item['pricing']['unit']
+    quantity = unit_data['quantity']
+    if 'ofMeasureUnits' in unit_data:
+        unit = unit_data['ofMeasureUnits']
+    else:
+        size = item['size']
+        if not size:
+            # Maybe the description can be parsed as size
+            size = item['description']
+        parsed_quantity, unit = parse_str_unit(size)
+        # A quantity of 0 or 1 indicates that the information is elsewhere
+        if parsed_quantity != quantity and quantity > 1:
+            raise RuntimeError(f"Quantity '{quantity} does not matched parsed quantity '{parsed_quantity}")
+        # If quantity is 1 and we parsed a different value then that's the right value
+        # (e.g. 1 (quantity) packet of 38g (parsed_quantity))
+        quantity = parsed_quantity
+
+    return quantity, unit
+
+
+def parse_str_unit(size):
+    # Try coles-special methods before going to the generic function
+    size = size.lower()
+    matched = re.match(r'^.*can (?P<quantity>[0-9]+)(?P<unit>[a-z]+):pack(?P<count>[0-9]+)', size)
+    if matched:
+        quantity = float(matched.group('quantity'))
+        unit = matched.group('unit')
+        count = float(matched.group('count'))
+        quantity *= count
+        return quantity, unit
+    else:
+        return units.parse_str_unit(size)
 
 
 def main(quick):

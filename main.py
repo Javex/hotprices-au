@@ -9,7 +9,7 @@ def main_sync(args):
 
 
 def main_analysis(args):
-    analysis.transform_data(args.day)
+    analysis.transform_data(args.day, args.store)
 
 
 def parse_date(date):
@@ -29,6 +29,7 @@ def main():
 
     analysis_parser = subparsers.add_parser('analysis')
     analysis_parser.add_argument('--day', type=parse_date, default=datetime.now())
+    analysis_parser.add_argument('--store', choices=list(sites.sites))
     analysis_parser.set_defaults(func=main_analysis)
 
     args = parser.parse_args()
