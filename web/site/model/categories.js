@@ -4,12 +4,12 @@
 // field. E.g. "Obst & Gemüse > Salate" has the code "13", "Kühlwaren > Tofu" has the code "4C"
 exports.categories = [
     {
-        name: "🍌🥑 Obst & Gemüse",
+        name: "🍌🥑 Fruit & Veg",
         subcategories: [
-            /*00*/ "Obst",
-            /*01*/ "Gemüse",
-            /*02*/ "Salate",
-            /*03*/ "Trockenfrüchte & Nüsse", // I don't know how to make formatting stop.
+            /*00*/ "Fruit",
+            /*01*/ "Veg",
+            /*02*/ "Salad & Herbs",
+            /*03*/ "Nuts & Dried Fruit", // I don't know how to make formatting stop.
         ],
     },
     {

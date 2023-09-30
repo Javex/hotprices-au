@@ -189,7 +189,7 @@
     "id": "1723",
     "description": "Fruit & Vegetables > Nuts & Dried Fruit",
     "url": "https://www.coles.com.au/browse/fruit-vegetables/nuts-dried-fruit",
-    "code": null
+    "code": "03"
   },
   {
     "id": "8892201",
@@ -201,19 +201,19 @@
     "id": "8893800",
     "description": "Fruit & Vegetables > Packaged Salad",
     "url": "https://www.coles.com.au/browse/fruit-vegetables/packaged-salad",
-    "code": null
+    "code": "02"
   },
   {
     "id": "8894601",
     "description": "Fruit & Vegetables > Prepared Vegetable",
     "url": "https://www.coles.com.au/browse/fruit-vegetables/prepared-vegetable",
-    "code": null
+    "code": "01"
   },
   {
     "id": "1304",
     "description": "Fruit & Vegetables > Salad & Herbs",
     "url": "https://www.coles.com.au/browse/fruit-vegetables/salad-herbs",
-    "code": null
+    "code": "02"
   },
   {
     "id": "8892415",
