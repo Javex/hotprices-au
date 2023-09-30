@@ -174,7 +174,7 @@ def main(quick):
 
         if quick:
             break
-    output.save_data('woolies', categories, quick)
+    output.save_data('woolies', categories)
 
 
 if __name__ == '__main__':

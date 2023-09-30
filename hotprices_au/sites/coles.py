@@ -161,7 +161,7 @@ def main(quick):
         if quick:
             break
         #save_cache(categories)
-    output.save_data('coles', categories, quick)
+    output.save_data('coles', categories)
     #print(json.dumps(category, indent=4))
 
 
