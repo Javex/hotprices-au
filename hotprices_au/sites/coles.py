@@ -92,9 +92,13 @@ def get_canonical(item, today):
 
     quantity, unit = get_quantity_and_unit(item)
 
+    name = item['name']
+    brand = item['brand']
+    if brand:
+        name = f"{brand} {name}"
     result = {
         'id': item['id'],
-        'name': item['name'],
+        'name': name,
         'description': item['description'],
         'price': item['pricing']['now'],
         'priceHistory': [{
