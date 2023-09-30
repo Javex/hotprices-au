@@ -1,6 +1,7 @@
 import argparse
 import logging
 from datetime import datetime
+import pathlib
 from hotprices_au import sites, analysis
 
 
@@ -9,7 +10,9 @@ def main_sync(args):
 
 
 def main_analysis(args):
-    analysis.transform_data(args.day, args.store)
+    output_dir = pathlib.Path('output')
+    data_dir = pathlib.Path('static/data')
+    analysis.transform_data(args.day, output_dir, data_dir, args.store)
 
 
 def parse_date(date):

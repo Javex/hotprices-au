@@ -149,7 +149,7 @@ exports.bundle = bundle;
 
 
 (async () => {
-    const outputDir = "../hotprices_au/static";
+    const outputDir = "../static";
 
     /*if (fs.existsSync("site/output/data/log.txt")) {
         fs.copyFileSync("site/output/data/log.txt", "site/log.txt");
