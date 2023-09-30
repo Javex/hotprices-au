@@ -28,3 +28,36 @@ jobs:
         with:
           name: coles_snapshot
           path: ./output/coles/
+  merge-price-history:
+    permissions:
+      contents: read  # Required for checkout action
+      id-token: write # This is required for requesting the JWT
+    runs-on: ubuntu-latest
+    needs:
+      - scrape-woolies
+      - scrape-coles
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download coles artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: coles_snapshot
+          path: ./output/coles/
+      - name: Download woolies artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: woolies_snapshot
+          path: ./output/woolies/
+      - run: pip3 install -r requirements.txt
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: "${{ vars.TARGET_ROLE_ARN }}"
+          aws-region: ap-southeast-2
+      # Sync copies the file down if it exists, skips otherwise
+      - run: aws s3 sync s3://grocery-scrape-au/latest-canonical.json.gz ./output/
+      - run: python3 main.py analysis
+      - uses: actions/upload-artifact@v3
+        with:
+          name: latest_canonical
+          path: ./output/latest-canonical.json.gz
