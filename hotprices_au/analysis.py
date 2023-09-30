@@ -35,6 +35,9 @@ def dedup_items(items):
             duplicates.setdefault(item['store'], 0)
             duplicates[item['store']] += 1
 
+    if duplicates:
+        logger.info(f'Deduplicated items: {json.dumps(duplicates)}')
+
     return dedup_items
 
 
@@ -54,9 +57,10 @@ def transform_data(day, store_filter=None):
                 continue
 
             canonical_items = get_canoncial_for(store, raw_items, day.strftime('%Y-%m-%d'))
-            items = dedup_items(canonical_items)
-            store_items += items
+            store_items += canonical_items
 
+        store_items = dedup_items(store_items)
+        logger.info(f"Total number of products for store '{store}': {len(store_items)}")
         latest_canonical_file_store = pathlib.Path(f"hotprices_au/static/data/latest-canonical.{store}.compressed.json")
         latest_canonical_file_store.write_text(json.dumps(store_items))
 

@@ -11,6 +11,7 @@ global_units = {
     "set": {'unit': 'ea', 'factor': 1},
     "pair": {'unit': 'ea', 'factor': 1},  # Yes I know it should be 2, but for pairs 1 makes more sense
     "piece": {'unit': 'ea', 'factor': 1},
+    "tablets": {'unit': 'ea', 'factor': 1},
     "dozen": {'unit': 'ea', 'factor': 12},
     'mg': {'unit': 'g', 'factor': 0.001},
     'g': {'unit': 'g', 'factor': 1},

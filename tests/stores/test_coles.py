@@ -34,7 +34,7 @@ def get_item(ofMeasureUnits=None, quantity=None, isWeighted=True, pricing=True, 
     return item
 
 
-def test_items():
+def test_get_canonical():
     today = '2023-09-29'
     item = get_item(_type='SINGLE_TILE', adId='foo')
     can_item = coles.get_canonical(item, today)
@@ -88,4 +88,4 @@ def test_items():
 
 
 if __name__ == '__main__':
-    test_items()
+    test_get_canonical()
