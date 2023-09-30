@@ -65,13 +65,16 @@ def merge_price_history(old_items, new_items):
     return new_items
 
 
-def copy_items_to_site(latest_canonical_file, data_dir):
+def copy_items_to_site(latest_canonical_file, data_dir: pathlib.Path):
     with gzip.open(latest_canonical_file, 'rt') as fp:
         all_items = json.loads(fp.read())
 
     by_store = {}
     for item in all_items:
         by_store.setdefault(item['store'], []).append(item)
+
+    # Create data dir if it doesn't exist yet
+    data_dir.mkdir(parents=True, exist_ok=True)
 
     for store, store_items in by_store.items():
         latest_canonical_file_store = pathlib.Path(data_dir / f"latest-canonical.{store}.compressed.json")
