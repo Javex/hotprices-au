@@ -7,17 +7,24 @@ from .logging import logger
 from . import output, sites
 
 
-def get_canoncial_for(store, raw_items, today):
+def get_canoncial_for(store, raw_items, category_map, today):
     canonical_items = []
+    store_module = sites.sites[store]
     for raw_item in raw_items:
         try:
-            canonical_item = sites.sites[store].get_canonical(raw_item, today)
+            canonical_item = store_module.get_canonical(raw_item, today)
         except Exception:
             logger.exception(f"Unable to process store '{store}' item: {raw_item}")
+            import pprint; pprint.pprint(raw_item)
+            import pdb; pdb.set_trace()
             continue
         if canonical_item is None:
             continue
         canonical_item['store'] = store
+        try:
+            canonical_item['category'] = store_module.get_category_from_map(category_map, raw_item)
+        except KeyError:
+            canonical_item['category'] = None
         canonical_items.append(canonical_item)
     return canonical_items
 
@@ -88,7 +95,11 @@ def transform_data(day, output_dir, data_dir, store_filter=None):
             # Skip if we only transform one store
             continue
         store_items = []
-        raw_categories = output.load_data(store, day=day)
+        raw_categories = output.load_data(store, output_dir, day=day)
+        # Let's try and figure out categories
+        store_module = sites.sites[store]
+        category_map = store_module.get_category_mapping(raw_categories)
+
         for category in raw_categories:
             try:
                 raw_items = category['Products']
@@ -96,11 +107,17 @@ def transform_data(day, output_dir, data_dir, store_filter=None):
                 # Don't have items for this category
                 continue
 
-            canonical_items = get_canoncial_for(store, raw_items, day.strftime('%Y-%m-%d'))
+            canonical_items = get_canoncial_for(store, raw_items, category_map, day.strftime('%Y-%m-%d'))
             store_items += canonical_items
 
         store_items = dedup_items(store_items)
-        logger.info(f"Total number of products for store '{store}': {len(store_items)}")
+
+        uncategorised = 0
+        for item in store_items:
+            if item['category'] is None:
+                uncategorised += 1
+
+        logger.info(f"Total number of products for store '{store}': {len(store_items)}. Uncategorised: {uncategorised}")
         all_items += store_items
 
     latest_canonical_file = pathlib.Path(output_dir / "latest-canonical.json.gz")

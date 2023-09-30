@@ -6,13 +6,12 @@ from hotprices_au import sites, analysis
 
 
 def main_sync(args):
-    sites.sites[args.store].main(args.quick)
+    sites.sites[args.store].main(args.quick, args.output_dir)
 
 
 def main_analysis(args):
-    output_dir = pathlib.Path('output')
     data_dir = pathlib.Path('static/data')
-    analysis.transform_data(args.day, output_dir, data_dir, args.store)
+    analysis.transform_data(args.day, args.output_dir, data_dir, args.store)
 
 
 def parse_date(date):
@@ -22,6 +21,7 @@ def parse_date(date):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true', default=False)
+    parser.add_argument('--output-dir', type=pathlib.Path, default=pathlib.Path('output'))
 
     subparsers = parser.add_subparsers(help='sub-command help')
 

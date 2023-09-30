@@ -6,6 +6,7 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 
 from .. import output, request, units
+import hotprices_au.categories
 
 
 class ColesScraper:
@@ -69,7 +70,15 @@ class ColesScraper:
         response = self.session.get(f'https://www.coles.com.au/api/bff/products/categories?storeId={self.store_id}')
         response.raise_for_status()
         category_data = response.json()
-        categories = category_data['catalogGroupView']
+        categories = []
+        for category_obj in category_data['catalogGroupView']:
+            cat_slug = category_obj['seoToken']
+
+            if cat_slug in ['down-down', 'back-to-school']:
+                # Skip for now, expect duplicate products
+                continue
+
+            categories.append(category_obj)
         return categories
 
 def get_canonical(item, today):
@@ -137,21 +146,12 @@ def parse_str_unit(size):
         return units.parse_str_unit(size)
 
 
-def main(quick):
+def main(quick, output_dir):
     coles = ColesScraper(store_id='0584', quick=quick)
     categories = coles.get_categories()
     #categories = load_cache()
     for category_obj in categories:
         cat_slug = category_obj['seoToken']
-        
-        if cat_slug in ['down-down', 'back-to-school']:
-            # Skip for now, expect duplicate products
-            continue
-
-        if 'Products' in category_obj:
-            # Already cached
-            continue
-
         cat_desc = category_obj['name']
         print(f'Fetching category {cat_slug} ({cat_desc})')
         category = coles.get_category(cat_slug)
@@ -161,8 +161,50 @@ def main(quick):
         if quick:
             break
         #save_cache(categories)
-    output.save_data('coles', categories)
+    output.save_data('coles', categories, output_dir)
+    get_category_mapping(categories)
     #print(json.dumps(category, indent=4))
+
+
+def get_category_mapping(raw_categories):
+    "Take raw coles categories and turn them into standard format"
+    categories = []
+    for main_category in raw_categories:
+        main_cat_seo = main_category['seoToken']
+        main_cat_name = main_category['name']
+        # Create entry for main category for products that aren't in any sub category
+        categories.append({
+            'id': main_category['id'],
+            'description': main_cat_name,
+            'url': f'https://www.coles.com.au/browse/{main_cat_seo}',
+            'code': None,
+        })
+
+        sub_categories = main_category.get('catalogGroupView', [])
+        if not sub_categories:
+            raise RuntimeError("No subcats")
+        for sub_category in sub_categories:
+            sub_cat_seo = sub_category['seoToken']
+            sub_cat_name = sub_category['name']
+            sub_category_item = {
+                'id': sub_category['id'],
+                'description': f'{main_cat_name} > {sub_cat_name}',
+                'url': f'https://www.coles.com.au/browse/{main_cat_seo}/{sub_cat_seo}',
+                'code': None,
+            }
+            categories.append(sub_category_item)
+
+    categories = hotprices_au.categories.merge_save_save_categories('coles', categories)
+
+    category_map = {c['id']: c for c in categories}
+    return category_map
+
+
+def get_category_from_map(category_map, raw_item):
+    # Confusingly "subCategoryId" is actually the parent category
+    # and "categoryId" is the level 2 category
+    category_id = raw_item['onlineHeirs'][0]['categoryId']
+    return category_map[category_id]['code']
 
 
 if __name__ == '__main__':

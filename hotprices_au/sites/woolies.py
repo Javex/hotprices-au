@@ -1,7 +1,9 @@
+import re
 import requests
 import json
 
 from .. import output, request, units
+import hotprices_au
 
 
 class WooliesAPI:
@@ -80,11 +82,30 @@ class WooliesAPI:
             request_data['pageNumber'] += 1
 
     def get_categories(self):
-        response = self.session.get('https://www.woolworths.com.au/api/ui/v2/bootstrap')
+        response = self.session.get('https://www.woolworths.com.au/apis/ui/PiesCategoriesWithSpecials')
         response.raise_for_status()
         response_data = response.json()
-        categories = response_data['ListTopLevelPiesCategories']['Categories']
+        category_data = response_data['Categories']
+        categories = []
+        for category_obj in category_data:
+            if is_filtered_category(category_obj):
+                continue
+            categories.append(category_obj)
         return categories
+
+
+def is_filtered_category(category_obj):
+    cat_id = category_obj['NodeId']
+    if cat_id == 'specialsgroup':
+        # Skip for now, expect duplicate products
+        return True
+
+    cat_desc = category_obj['Description']
+    if cat_desc == 'Front of Store':
+        # Throws error, probably nothing special in here anyway
+        return True
+
+    return False
 
 
 def get_canonical(item, today):
@@ -148,25 +169,13 @@ def get_canonical(item, today):
     return result
 
 
-
-def main(quick):
+def main(quick, output_dir):
     woolies = WooliesAPI(quick=quick)
     categories = woolies.get_categories()
     #categories = load_cache()
     for category_obj in categories:
         cat_id = category_obj['NodeId']
-        if cat_id == "specialsgroup":
-            # Skip for now, expect duplicate products
-            continue
-
-        if 'Products' in category_obj:
-            # Already cached
-            continue
-
         cat_desc = category_obj['Description']
-        if cat_desc == 'Front of Store':
-            # Throws error, probably nothing special in here anyway
-            continue
         print(f'Fetching category {cat_id} ({cat_desc})')
         category = woolies.get_category(cat_id)
         all_category_bundles = list(category)
@@ -174,7 +183,114 @@ def main(quick):
 
         if quick:
             break
-    output.save_data('woolies', categories)
+    output.save_data('woolies', categories, output_dir)
+    get_category_mapping(categories)
+
+
+def normalise_category_name(category_name):
+    category_name, _ = re.subn(r'[^A-Za-z]+', '', category_name)
+    return category_name
+
+
+def ensure_subcategories(raw_categories):
+    """
+    This exist for backfill reasons: Initial data doesn't have subcategories so
+    we need to re-fetch that data if we don't have it yet. Can probably be
+    removed once we've got it fixed.
+    """
+    has_children = False
+    for main_cat in raw_categories:
+        if main_cat.get('Children'):
+            has_children = True
+            break
+
+    if has_children:
+        return raw_categories
+    else:
+        woolies = WooliesAPI()
+        return woolies.get_categories()
+
+
+def get_category_mapping(raw_categories):
+    "Raw woolies categories to standard format"
+    categories = []
+    raw_categories = ensure_subcategories(raw_categories)
+    for main_category in raw_categories:
+        if is_filtered_category(main_category):
+            continue
+        main_cat_seo = main_category['UrlFriendlyName']
+        main_cat_name = main_category['Description']
+        # Create entry for main category for products that aren't in any sub category
+        category_id = f"Aisle.{normalise_category_name(main_cat_name)}"
+        categories.append({
+            'id': main_category['NodeId'],
+            'search_name': main_cat_name,
+            'description': main_cat_name,
+            'url': f'https://www.woolworths.com.au/shop/browse/{main_cat_seo}',
+            'code': None,
+        })
+
+        sub_categories = main_category.get('Children', [])
+        if not sub_categories:
+            raise RuntimeError("No subcats")
+        for sub_category in sub_categories:
+            sub_cat_seo = sub_category['UrlFriendlyName']
+            sub_cat_name = sub_category['Description']
+            sub_category_id = f"{category_id}.{normalise_category_name(sub_cat_name)}"
+            sub_category_item = {
+                'id': sub_category['NodeId'],
+                'search_name': sub_cat_name,
+                'description': f'{main_cat_name} > {sub_cat_name}',
+                'url': f'https://www.woolworths.com.au/shop/browse/{main_cat_seo}/{sub_cat_seo}',
+                'code': None,
+            }
+            categories.append(sub_category_item)
+
+    categories = hotprices_au.categories.merge_save_save_categories('woolies', categories)
+
+    category_map = {c['search_name']: c for c in categories}
+    return category_map
+
+
+def get_category_from_map(category_map, raw_item):
+    deptcategory_names = json.loads(raw_item['Products'][0]['AdditionalAttributes']['piesdepartmentnamesjson'])
+    category_names = json.loads(raw_item['Products'][0]['AdditionalAttributes']['piescategorynamesjson'])
+    subcategory_names = json.loads(raw_item['Products'][0]['AdditionalAttributes']['piessubcategorynamesjson'])
+    current_favourite = None
+    categories_to_check = subcategory_names + category_names + deptcategory_names
+    for category_name in categories_to_check:
+        candidate = category_map.get(category_name)
+        if not candidate:
+            continue
+        if current_favourite is None:
+            current_favourite = candidate
+        candidate_path_depth = len(candidate['url'].split('/'))
+        current_candidate_path_depth = len(current_favourite['url'].split('/'))
+        if candidate_path_depth > current_candidate_path_depth:
+            current_favourite = candidate
+
+    if not current_favourite:
+        # Try by dept data ID
+        dept_data_list = json.loads(raw_item['Products'][0]['AdditionalAttributes']['PiesProductDepartmentsjson'])
+        for dept_data in dept_data_list:
+            category_id = dept_data['Id']
+            for category in category_map.values():
+                if category['id'] == category_id:
+                    current_favourite = category
+                    # Yes it only breaks the inner loop but it's unlikely there
+                    # is more than one matching element and this case is
+                    # incredibly rare anyway, only if the data is really bad so it
+                    # doesn't matter
+                    break
+
+    try:
+        return current_favourite['code']
+    except Exception:
+        import pprint; pprint.pprint(raw_item)
+        print(deptcategory_names)
+        print(category_names)
+        print(subcategory_names)
+        import pdb; pdb.set_trace()
 
 
 if __name__ == '__main__':
