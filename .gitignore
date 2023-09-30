@@ -1,0 +1,6 @@
+static/**
+output/**
+tmp/**
+__pycache__
+.vscode/**
+web/node_modules/**
