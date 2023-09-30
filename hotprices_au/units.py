@@ -7,11 +7,16 @@ global_units = {
     "pack": {'unit': 'ea', 'factor': 1},
     "pk": {'unit': 'ea', 'factor': 1},
     "bunch": {'unit': 'ea', 'factor': 1},
+    "sheets": {'unit': 'ea', 'factor': 1},
+    "sachets": {'unit': 'ea', 'factor': 1},
+    "capsules": {'unit': 'ea', 'factor': 1},
     "ss": {'unit': 'ea', 'factor': 1},  # No idea what this is, related to face masks?
     "set": {'unit': 'ea', 'factor': 1},
     "pair": {'unit': 'ea', 'factor': 1},  # Yes I know it should be 2, but for pairs 1 makes more sense
+    "pairs": {'unit': 'ea', 'factor': 1},  # Yes I know it should be 2, but for pairs 1 makes more sense
     "piece": {'unit': 'ea', 'factor': 1},
     "tablets": {'unit': 'ea', 'factor': 1},
+    "rolls": {'unit': 'ea', 'factor': 1},
     "dozen": {'unit': 'ea', 'factor': 12},
     'mg': {'unit': 'g', 'factor': 0.001},
     'g': {'unit': 'g', 'factor': 1},
@@ -36,13 +41,13 @@ def parse_str_unit(unit_str):
 
     # Regex for 30 x 375ml
     # And the stupid 4x4x375mL ...
-    re_multiple_first = r'^(?P<count>[0-9x]+)? ?x ?(?P<quantity>[0-9]+) ?(?P<unit>[a-zA-Z]+) ?(case|carton|pack)?$'
+    re_multiple_first = r'^(?P<count>[0-9x]+)? ?x ?(?P<quantity>[0-9]+) ?(?P<unit>[a-z]+) ?(case|carton|pack)?$'
 
     # Regex for 375ml x 30
-    re_multiple_later = r'^(?P<quantity>[0-9]+)(?P<unit>[a-zA-Z]+) ?x ?(?P<count>[0-9]+)? ?(case|carton|pack)?$'
+    re_multiple_later = r'^(?P<quantity>[0-9]+)(?P<unit>[a-z]+) ?x ?(?P<count>[0-9]+)? ?(case|carton|pack)?$'
 
     # Regex for 100g Pack
-    re_regular_pack = r'^(?P<quantity>[0-9\.]+)? ?(?P<unit>[a-zA-Z]+) ?(punnet|pack|each|set)?$'
+    re_regular_pack = r'^(?P<quantity>[0-9\.]+)? ?(?P<unit>[a-z]+) ?(punnet|pack|each|set)?$'
 
     # Try each regex and pick first match
     all_regex = [
@@ -73,6 +78,9 @@ def parse_str_unit(unit_str):
                 quantity = 1
 
             unit = matched.group('unit')
+            if unit not in global_units:
+                # If it's not a valid unit we can't parse it
+                continue
 
             quantity *= count
             return quantity, unit

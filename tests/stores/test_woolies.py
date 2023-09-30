@@ -6,20 +6,25 @@ def get_item(**kwargs):
         'Name': 'test',
         'Description': 'test desc',
         'IsInStock': True,
+        'Price': None,
+        'PackageSize': None,
+        'CupPrice': None,
+        'CupMeasure': None,
+        'WasPrice': None,
     }
+
     if 'CupMeasure' in kwargs:
         defaults.update({
             'CupPrice': 10,
-            'PackageSize': None,
-            'Price': None,
         })
-    elif 'PackageSize' in kwargs:
+
+    if 'PackageSize' in kwargs:
         defaults.update({
             'Price': 10,
-            'CupMeasure': None,
-            'CupPrice': None,
+            'WasPrice': 10,
         })
     defaults.update(kwargs)
+
     products = {'Products': [defaults]}
     return products
 
@@ -135,12 +140,12 @@ def test_get_canonical():
     assert can_item['unit'] == 'ea'
     assert can_item['quantity'] == 1
 
-    item = get_item(PackageSize='700Mm', Name='Kahlua White Russian')
+    item = get_item(Stockcode=532887, PackageSize='700Mm', Name='Kahlua White Russian')
     can_item = woolies.get_canonical(item, today)
     assert can_item['unit'] == 'ml'
     assert can_item['quantity'] == 700
 
-    item = get_item(PackageSize='200Nl x4 Pack', Name='Nelson County Bourbon & Cola')
+    item = get_item(Stockcode=985323, PackageSize='200Nl x4 Pack', Name='Nelson County Bourbon & Cola')
     can_item = woolies.get_canonical(item, today)
     assert can_item['unit'] == 'ml'
     assert can_item['quantity'] == 800
@@ -149,6 +154,17 @@ def test_get_canonical():
     can_item = woolies.get_canonical(item, today)
     assert can_item['unit'] == 'ea'
     assert can_item['quantity'] == 90
+
+    item = get_item(PackageSize='180g', Unit='Each', CupMeasure='100G')
+    can_item = woolies.get_canonical(item, today)
+    assert can_item['unit'] == 'g'
+    assert can_item['quantity'] == 180
+
+    item = get_item(PackageSize='375ml x 24 Case', Unit='Each', Price=None, IsInStock=False)
+    assert item['Products'][0]['WasPrice']
+    can_item = woolies.get_canonical(item, today)
+    assert can_item['unit'] == 'ml'
+    assert can_item['quantity'] == 9000
 
 
 if __name__ == '__main__':

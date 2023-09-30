@@ -113,22 +113,30 @@ def get_canonical(item, today):
         raise RuntimeError("More than one product, help")
     item = item['Products'][0]
 
-    # If item is out of stock then price might be empty so we need to take the "WasPrice" field
-    price = item['CupPrice']
-    unit = item['CupMeasure']
-    if price is None:
-        price = item['Price']
-        unit = item['PackageSize']
+    price = item['Price']
+    unit = item['PackageSize']
 
+    # If item is out of stock then price might be empty so we need to take the "WasPrice" field
     if price is None:
         price_was = item['WasPrice']
         if not item['IsInStock'] and price_was:
             price = price_was
 
+    # The second case is to handle two products with that "size"
+    if price is None or unit.lower() == "min. 250g":
+        price = item['CupPrice']
+        unit = item['CupMeasure']
+
     # Price is still None, can't do anything, skipping product
     if price is None:
         return None
 
+    # Fix some particularly problematic products
+    match item['Stockcode']:
+        case 249086: unit = '1kg'  # Woolworths Pot Set Greek Style Yoghurt
+        case 203793: unit = '2 pack'  # Nicorette Quit Smoking Quickmist Smart Track Mouth Spray Freshmint
+        case 532887: unit = '700ml'  # Kahlua White Russian
+        case 985323: unit = '800ml'  # Nelson County Bourbon & Cola
     result = {
         'id': item['Stockcode'],
         'name': item['Name'],
@@ -156,16 +164,7 @@ def get_canonical(item, today):
             return None
     result['unit'] = unit
     result['quantity'] = quantity
-    try:
-        result = units.convert_unit(result)
-    except KeyError:
-        # Wrong data, fix manually
-        if result['name'] == 'Kahlua White Russian' and result['unit'] == 'mm':
-            result['unit'] = 'ml'
-        elif result['name'] == 'Nelson County Bourbon & Cola' and result['unit'] == 'nl':
-            result['unit'] = 'ml'
-        else:
-            raise
+    result = units.convert_unit(result)
     return result
 
 
@@ -282,6 +281,12 @@ def get_category_from_map(category_map, raw_item):
                     # incredibly rare anyway, only if the data is really bad so it
                     # doesn't matter
                     break
+
+    # May need manual override
+    if not current_favourite:
+        match raw_item['Stockcode']:
+            case 283400: category_name = 'Bakery'
+        current_favourite = category_map[category_name]
 
     try:
         return current_favourite['code']

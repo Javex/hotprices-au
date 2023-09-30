@@ -115,16 +115,15 @@ def get_canonical(item, today):
 
 
 def get_quantity_and_unit(item):
-    # Try to get unit information from pricing data first
+    # Try to parse size information first, it looks better in the frontend
+    size = item['size']
+    if not size:
+        # Maybe the description can be parsed as size
+        size = item['description']
+
     unit_data = item['pricing']['unit']
     quantity = unit_data['quantity']
-    if 'ofMeasureUnits' in unit_data:
-        unit = unit_data['ofMeasureUnits']
-    else:
-        size = item['size']
-        if not size:
-            # Maybe the description can be parsed as size
-            size = item['description']
+    try:
         parsed_quantity, unit = parse_str_unit(size)
         # A quantity of 0 or 1 indicates that the information is elsewhere
         if parsed_quantity != quantity and quantity > 1:
@@ -132,6 +131,12 @@ def get_quantity_and_unit(item):
         # If quantity is 1 and we parsed a different value then that's the right value
         # (e.g. 1 (quantity) packet of 38g (parsed_quantity))
         quantity = parsed_quantity
+    except RuntimeError:
+        # If that didn't work we can now try to get the info from standard sizes (e.g. per 100g)
+        if 'ofMeasureUnits' in unit_data:
+            unit = unit_data['ofMeasureUnits']
+        else:
+            raise
 
     return quantity, unit
 

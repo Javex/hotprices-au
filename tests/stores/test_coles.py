@@ -5,6 +5,8 @@ def get_item(ofMeasureUnits=None, quantity=None, isWeighted=True, pricing=True, 
         '_type': 'PRODUCT',
         'id': '1',
         'name': 'test',
+        'brand': 'foobrand',
+        'size': size,
         'description': 'test desc',
         'pricing': {
             'now': 10,
@@ -23,9 +25,6 @@ def get_item(ofMeasureUnits=None, quantity=None, isWeighted=True, pricing=True, 
 
     if quantity is not None:
         defaults['pricing']['unit']['quantity'] = quantity
-
-    if size is not None:
-        defaults['size'] = size
 
     if pricing is None:
         defaults['pricing'] = None
@@ -84,6 +83,18 @@ def test_get_canonical():
     can_item = coles.get_canonical(item, today)
     assert can_item['unit'] == 'ml'
     assert can_item['quantity'] == 2250
+    assert not can_item['isWeighted']
+
+    item = get_item(size='180g', ofMeasureUnits='g', quantity=1, isWeighted=False)
+    can_item = coles.get_canonical(item, today)
+    assert can_item['unit'] == 'g'
+    assert can_item['quantity'] == 180
+    assert not can_item['isWeighted']
+
+    item = get_item(size='Medium', ofMeasureUnits='ea', quantity=1, isWeighted=False)
+    can_item = coles.get_canonical(item, today)
+    assert can_item['unit'] == 'ea'
+    assert can_item['quantity'] == 1
     assert not can_item['isWeighted']
 
 
