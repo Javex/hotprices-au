@@ -131,3 +131,21 @@ def transform_data(day, output_dir, data_dir, store_filter=None):
 
     copy_items_to_site(latest_canonical_file, data_dir)
     return all_items
+
+def parse_full_history(output_dir: pathlib.Path, data_dir, store_filter=None):
+    # First remote canonical data
+    latest_canonical_file = output_dir / "latest-canonical.json.gz"
+    if latest_canonical_file.exists():
+        latest_canonical_file.unlink()
+    # List all stores in output_dir first
+    for store in output_dir.iterdir():
+        if store.name not in sites.sites:
+            # Files we can ignore
+            continue
+        if store_filter is not None and store.name != store_filter:
+            # We filter here so we do one store at a time
+            continue
+        for data_file in sorted(store.iterdir()):
+            fname = data_file.name
+            day = datetime.strptime(fname.split('.')[0], '%Y-%m-%d')
+            transform_data(day, output_dir, data_dir, store_filter=store.name)

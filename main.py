@@ -11,7 +11,10 @@ def main_sync(args):
 
 def main_analysis(args):
     data_dir = pathlib.Path('static/data')
-    analysis.transform_data(args.day, args.output_dir, data_dir, args.store)
+    if args.history:
+        analysis.parse_full_history(args.output_dir, data_dir, args.store)
+    else:
+        analysis.transform_data(args.day, args.output_dir, data_dir, args.store)
 
 
 def parse_date(date):
@@ -33,6 +36,10 @@ def main():
     analysis_parser = subparsers.add_parser('analysis')
     analysis_parser.add_argument('--day', type=parse_date, default=datetime.now())
     analysis_parser.add_argument('--store', choices=list(sites.sites))
+    analysis_parser.add_argument(
+        '--history', action='store_true', default=False,
+        help="Read the entire history and re-generate information from source",
+    )
     analysis_parser.set_defaults(func=main_analysis)
 
     args = parser.parse_args()
