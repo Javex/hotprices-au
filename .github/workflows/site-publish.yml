@@ -1,0 +1,41 @@
+name: Publish Site
+
+on:
+  push:
+    branches: [ "main" ]
+
+# env:
+#   # Use docker.io for Docker Hub if empty
+#   REGISTRY: ghcr.io
+#   # github.repository as <account>/<repo>
+#   IMAGE_NAME: ${{ github.repository }}
+
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: web/
+
+      - name: Build static site
+        run: node bundle.js
+        working-directory: web/
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: "${{ vars.TARGET_ROLE_ARN }}"
+          aws-region: ap-southeast-2
+
+      - name: Upload site to S3
+        run: aws s3 sync ./static/ s3://hotprices.org/
