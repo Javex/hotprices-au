@@ -15,41 +15,6 @@ class Carts extends Model {
         const val = localStorage.getItem("carts");
         let carts = (this._carts = val ? JSON.parse(val) : []);
 
-        // Add Momentum cart if it is not in the list of carts
-        if (!localStorage.getItem("updatedMomentum") || !carts.some((cart) => cart.name === "Momentum Eigenmarken Vergleich")) {
-            localStorage.setItem("updatedMomentum", "true");
-            const momentumCart = await misc.fetchJSON("data/momentum-cart.new.json");
-            carts.unshift(momentumCart);
-        }
-
-        if (!localStorage.getItem("updatedKnnCarts")) {
-            localStorage.setItem("updatedKnnCarts", "true");
-            carts = this._carts = carts.filter((cart) => cart.name != "Markenprodukte Billa/Spar");
-            carts = this._carts = carts.filter((cart) => cart.name != "Diskont-Marken Produkte Billa/Spar");
-            carts = this._carts = carts.filter((cart) => cart.name != "Bio Eigenmarken Produkte Billa/Spar");
-            carts = this._carts = carts.filter((cart) => cart.name != "Mittelpreisige Eigenmarken Produkte Billa/Spar");
-        }
-
-        if (!carts.some((cart) => cart.name == "Markenprodukte Billa/Spar")) {
-            const billaSparCart = await misc.fetchJSON("data/billa-spar-cart.json");
-            carts.unshift(billaSparCart);
-        }
-
-        if (!carts.some((cart) => cart.name == "Diskont-Marken Produkte Billa/Spar")) {
-            const budgetCart = await misc.fetchJSON("data/budget-cart.json");
-            carts.unshift(budgetCart);
-        }
-
-        if (!carts.some((cart) => cart.name == "Bio Eigenmarken Produkte Billa/Spar")) {
-            const budgetCart = await misc.fetchJSON("data/bio-cart.json");
-            carts.unshift(budgetCart);
-        }
-
-        if (!carts.some((cart) => cart.name == "Mittelpreisige Eigenmarken Produkte Billa/Spar")) {
-            const budgetCart = await misc.fetchJSON("data/midrange-cart.json");
-            carts.unshift(budgetCart);
-        }
-
         // Update items in cart to their latest version.
         for (const cart of carts) {
             const items = [];
