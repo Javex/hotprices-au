@@ -186,6 +186,7 @@ exports.bundle = bundle;
 
 (async () => {
     const outputDir = "../static";
+    let liveReload = process.env.NODE_ENV === "development" || false;
 
     /*if (fs.existsSync("site/output/data/log.txt")) {
         fs.copyFileSync("site/output/data/log.txt", "site/log.txt");
@@ -198,9 +199,5 @@ exports.bundle = bundle;
         fs.copyFileSync("site/log.txt", "site/output/data/log.txt");
         fs.unlinkSync("site/log.txt");
     }*/
-    bundle("site", outputDir, true);
-
-    /*const app = express();
-    app.use(compression());
-    app.use(express.static("site/output"));*/
+    bundle("site", outputDir, liveReload);
 })();
