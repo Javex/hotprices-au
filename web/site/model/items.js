@@ -38,7 +38,12 @@ class Items extends Model {
                 new Promise(async (resolve) => {
                     let start = performance.now();
                     try {
-                        const response = await fetch(`data/latest-canonical.${store}.compressed.json`);
+                        let response;
+                        response = await fetch(`data/latest-canonical.${store}.compressed.json.gz`);
+                        if (response.status == 404) {
+                            // In dev we're not using compression
+                            response = await fetch(`data/latest-canonical.${store}.compressed.json`);
+                        }
                         const json = await response.json();
                         log(`Loader - loading compressed items for ${store} took ${deltaTime(start)} secs`);
                         start = performance.now();
