@@ -72,7 +72,7 @@ def merge_price_history(old_items, new_items):
     return new_items
 
 
-def copy_items_to_site(latest_canonical_file, data_dir: pathlib.Path):
+def copy_items_to_site(latest_canonical_file, data_dir: pathlib.Path, compress):
     with gzip.open(latest_canonical_file, 'rt') as fp:
         all_items = json.loads(fp.read())
 
@@ -85,10 +85,16 @@ def copy_items_to_site(latest_canonical_file, data_dir: pathlib.Path):
 
     for store, store_items in by_store.items():
         latest_canonical_file_store = pathlib.Path(data_dir / f"latest-canonical.{store}.compressed.json")
-        latest_canonical_file_store.write_text(json.dumps(store_items))
+        store_data = json.dumps(store_items)
+        if compress:
+            latest_canonical_file_store = latest_canonical_file_store.with_suffix('.json.gz')
+            with gzip.open(latest_canonical_file_store, 'wt') as fp:
+                fp.write(store_data)
+        else:
+            latest_canonical_file_store.write_text(store_data)
 
 
-def transform_data(day, output_dir, data_dir, store_filter=None):
+def transform_data(day, output_dir, data_dir, store_filter=None, compress=False):
     all_items = []
     for store in sites.sites.keys():
         if store_filter is not None and store_filter != store:
@@ -129,10 +135,11 @@ def transform_data(day, output_dir, data_dir, store_filter=None):
     with gzip.open(latest_canonical_file, 'wt') as fp:
         fp.write(json.dumps(all_items))
 
-    copy_items_to_site(latest_canonical_file, data_dir)
+    copy_items_to_site(latest_canonical_file, data_dir, compress)
     return all_items
 
-def parse_full_history(output_dir: pathlib.Path, data_dir, store_filter=None):
+
+def parse_full_history(output_dir: pathlib.Path, data_dir, store_filter=None, compress=False):
     # First remote canonical data
     latest_canonical_file = output_dir / "latest-canonical.json.gz"
     if latest_canonical_file.exists():
@@ -148,4 +155,4 @@ def parse_full_history(output_dir: pathlib.Path, data_dir, store_filter=None):
         for data_file in sorted(store.iterdir()):
             fname = data_file.name
             day = datetime.strptime(fname.split('.')[0], '%Y-%m-%d')
-            transform_data(day, output_dir, data_dir, store_filter=store.name)
+            transform_data(day, output_dir, data_dir, store_filter=store.name, compress=compress)

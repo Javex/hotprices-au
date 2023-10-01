@@ -12,9 +12,9 @@ def main_sync(args):
 def main_analysis(args):
     data_dir = pathlib.Path('static/data')
     if args.history:
-        analysis.parse_full_history(args.output_dir, data_dir, args.store)
+        analysis.parse_full_history(args.output_dir, data_dir, args.store, args.compress)
     else:
-        analysis.transform_data(args.day, args.output_dir, data_dir, args.store)
+        analysis.transform_data(args.day, args.output_dir, data_dir, args.store, args.compress)
 
 
 def parse_date(date):
@@ -36,6 +36,12 @@ def main():
     analysis_parser = subparsers.add_parser('analysis')
     analysis_parser.add_argument('--day', type=parse_date, default=datetime.now())
     analysis_parser.add_argument('--store', choices=list(sites.sites))
+    analysis_parser.add_argument(
+        '--compress', action='store_true', default=False,
+        help=(
+            "Whether to compress the individual store files. The main canonical "
+            "file will always be compressed."
+        ))
     analysis_parser.add_argument(
         '--history', action='store_true', default=False,
         help="Read the entire history and re-generate information from source",
