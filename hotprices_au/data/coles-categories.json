@@ -612,6 +612,12 @@
     "code": null
   },
   {
+    "id": "8911000",
+    "description": "Frozen > Frozen Vegan & Vegetarian",
+    "url": "https://www.coles.com.au/browse/frozen/frozen-vegan-vegetarian",
+    "code": null
+  },
+  {
     "id": "85618",
     "description": "Frozen > Frozen Vegetables",
     "url": "https://www.coles.com.au/browse/frozen/frozen-vegetables",
@@ -639,12 +645,6 @@
     "id": "85614",
     "description": "Frozen > Ice Cream",
     "url": "https://www.coles.com.au/browse/frozen/ice-cream",
-    "code": null
-  },
-  {
-    "id": "8911000",
-    "description": "Frozen > Plant Based",
-    "url": "https://www.coles.com.au/browse/frozen/plant-based",
     "code": null
   },
   {
