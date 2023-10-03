@@ -52,3 +52,21 @@ def test_merge_price_history():
     assert len(item['priceHistory']) == 2
     assert item['priceHistory'][0]['price'] == 2
     assert item['priceHistory'][1]['price'] == 3
+
+    # Repeat run of history on same day
+    old_items = [get_item()]
+    new_items = [old_items[0]]
+    items = analysis.merge_price_history(old_items, new_items)
+    assert len(items) == 1
+    item = items[0]
+    assert len(item['priceHistory']) == 1
+
+    # Prices with history don't get overwritten
+    oldest_items = [get_item()]
+    middle_items = [get_item(price=2)]
+    newest_items = [get_item(price=2)]
+    items = analysis.merge_price_history(oldest_items, middle_items)
+    items = analysis.merge_price_history(items, newest_items)
+    assert len(items) == 1
+    item = items[0]
+    assert len(item['priceHistory']) == 2
