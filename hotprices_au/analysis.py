@@ -56,6 +56,7 @@ def merge_price_history(old_items, new_items):
     for old_item in old_items:
         lookup[(old_item['store'], old_item['id'])] = old_item
 
+    new_prices = {}
     for new_item in new_items:
         old_item = lookup.pop((new_item['store'], new_item['id']), None)
         current_price = new_item['priceHistory'][0]['price']
@@ -64,10 +65,16 @@ def merge_price_history(old_items, new_items):
             if old_price == current_price:
                 new_item['priceHistory'] = old_item['priceHistory']
             else:
+                new_prices.setdefault(new_item['store'], 0)
+                new_prices[new_item['store']] += 1
                 new_item['priceHistory'] += old_item['priceHistory']
 
     if lookup:
         logger.info(f'{len(lookup)} products not in latest list.')
+
+    for store, new_price_count in new_prices.items():
+        if new_price_count:
+            logger.info(f"Store '{store}' has {new_price_count} new prices")
 
     return new_items
 
