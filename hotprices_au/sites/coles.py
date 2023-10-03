@@ -41,7 +41,7 @@ class ColesScraper:
         product_count = 0
         while True:
             print(f'Page {params["page"]}')
-            response = self.session.get(f'https://www.coles.com.au/_next/data/20230922.01_v3.52.0/en/browse/{cat_slug}.json', params=params)
+            response = self.session.get(f'https://www.coles.com.au/_next/data/20231002.02_v3.53.0/en/browse/{cat_slug}.json', params=params)
             try:
                 response.raise_for_status()
             except requests.HTTPError:
