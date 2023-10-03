@@ -72,7 +72,7 @@ jobs:
           aws-region: ap-southeast-2
       # Sync copies the file down if it exists, skips otherwise
       - run: aws s3 sync s3://grocery-scrape-au/latest-canonical.json.gz ./output/
-      - run: python3 main.py analysis
+      - run: python3 main.py analysis --compress
       - uses: actions/upload-artifact@v3
         with:
           name: latest_canonical
