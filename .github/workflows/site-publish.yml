@@ -32,3 +32,6 @@ jobs:
 
       - name: Upload site to S3
         run: aws s3 sync ./static/ s3://hotprices.org/
+
+      - name: Invalidate CloudFront cache to make changes available right away
+        run: aws cloudfront create-invalidation --distribution-id "${{ vars.CLOUDFRONT_DIST_ID }}" --paths "/*"
