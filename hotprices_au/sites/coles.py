@@ -32,6 +32,7 @@ class ColesScraper:
         next_data_json = json.loads(next_data_script.string)
         self.api_key = next_data_json['runtimeConfig']['BFF_API_SUBSCRIPTION_KEY']
         self.session.headers['ocp-apim-subscription-key'] = self.api_key
+        self.version = next_data_json['buildId']
 
     def get_category(self, cat_slug):
         params = {
@@ -41,7 +42,7 @@ class ColesScraper:
         product_count = 0
         while True:
             print(f'Page {params["page"]}')
-            response = self.session.get(f'https://www.coles.com.au/_next/data/20231016.01_v3.55.0/en/browse/{cat_slug}.json', params=params)
+            response = self.session.get(f'https://www.coles.com.au/_next/data/{self.version}/en/browse/{cat_slug}.json', params=params)
             try:
                 response.raise_for_status()
             except requests.HTTPError:
