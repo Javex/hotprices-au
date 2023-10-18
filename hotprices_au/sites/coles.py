@@ -156,7 +156,7 @@ def parse_str_unit(size):
         return units.parse_str_unit(size)
 
 
-def main(quick, output_dir):
+def main(quick, save_path):
     coles = ColesScraper(store_id='0584', quick=quick)
     categories = coles.get_categories()
     #categories = load_cache()
@@ -171,7 +171,7 @@ def main(quick, output_dir):
         if quick:
             break
         #save_cache(categories)
-    output.save_data('coles', categories, output_dir)
+    output.save_data(categories, save_path)
     get_category_mapping(categories)
     #print(json.dumps(category, indent=4))
 

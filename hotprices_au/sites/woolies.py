@@ -168,7 +168,7 @@ def get_canonical(item, today):
     return result
 
 
-def main(quick, output_dir):
+def main(quick, save_path):
     woolies = WooliesAPI(quick=quick)
     categories = woolies.get_categories()
     #categories = load_cache()
@@ -182,7 +182,7 @@ def main(quick, output_dir):
 
         if quick:
             break
-    output.save_data('woolies', categories, output_dir)
+    output.save_data(categories, save_path)
     get_category_mapping(categories)
 
 

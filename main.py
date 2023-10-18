@@ -2,11 +2,20 @@ import argparse
 import logging
 from datetime import datetime
 import pathlib
-from hotprices_au import sites, analysis
+from hotprices_au import sites, analysis, output
 
 
 def main_sync(args):
-    sites.sites[args.store].main(args.quick, args.output_dir)
+    save_path = output.get_save_path(args.store, args.output_dir)
+    if args.print_save_path:
+        print(save_path.relative_to(args.output_dir), end='')
+    elif args.skip_existing and save_path.exists():
+        print(
+            f'Skipping because outputfile {save_path} already exists and '
+            f'requested to skip if output file exists.'
+        )
+    else:
+        sites.sites[args.store].main(args.quick, save_path)
 
 
 def main_analysis(args):
@@ -30,6 +39,10 @@ def main():
 
     sync_parser = subparsers.add_parser('sync')
     sync_parser.add_argument('--quick', action='store_true', default=False)
+    sync_parser.add_argument(
+        '--print-save-path', action='store_true', default=False,
+        help='Print relative path where file will be stored, then exit')
+    sync_parser.add_argument('--skip-existing', action='store_true', default=False)
     sync_parser.add_argument('store', choices=list(sites.sites))
     sync_parser.set_defaults(func=main_sync)
 

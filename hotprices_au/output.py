@@ -4,7 +4,7 @@ import gzip
 from datetime import datetime
 
 
-def get_save_path(store, output_dir, compression, day=None):
+def get_save_path(store, output_dir, compression='gzip', day=None):
     if day is None:
         day = datetime.now()
     date_str = day.strftime("%Y-%m-%d")
@@ -18,13 +18,12 @@ def get_save_path(store, output_dir, compression, day=None):
     return fpath
 
 
-def save_data(store, categories, output_dir, compression='gzip'):
-    fpath = get_save_path(store, output_dir, compression)
+def save_data(categories, save_path, compression='gzip'):
     if compression == 'gzip':
-        with gzip.open(fpath, 'wt') as fp:
+        with gzip.open(save_path, 'wt') as fp:
             fp.write(json.dumps(categories))
     elif compression is None:
-        fpath.write_text(json.dumps(categories))
+        save_path.write_text(json.dumps(categories))
     else:
         raise RuntimeError(f"Unsupported compression '{compression}'")
 

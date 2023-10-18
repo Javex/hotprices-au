@@ -14,16 +14,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: pip3 install -r requirements.txt
-      - run: python3 main.py sync woolies
-      - uses: actions/upload-artifact@v3
-        with:
-          name: woolies_snapshot
-          path: ./output/woolies/
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: "${{ vars.TARGET_ROLE_ARN }}"
           aws-region: ap-southeast-2
+        # it's okay to ignore the exist code on the last line, if the file doesn't exist then we scrape it
+      - run: |
+          save_path="$(python3 main.py sync --print-save-path woolies)"
+          mkdir -p ./output/
+          aws s3 cp "s3://grocery-scrape-au/${save_path}" "./output/${save_path}" || true
+      - run: python3 main.py sync woolies --skip-existing
+      - uses: actions/upload-artifact@v3
+        with:
+          name: woolies_snapshot
+          path: ./output/woolies/
       - run: aws s3 sync ./output/woolies/ s3://grocery-scrape-au/woolies/
   scrape-coles:
     permissions:
