@@ -22,6 +22,7 @@ jobs:
         # it's okay to ignore the exist code on the last line, if the file doesn't exist then we scrape it
       - run: |
           save_path="$(python3 main.py sync --print-save-path woolies)"
+          echo "Save path is ${save_path}"
           mkdir -p ./output/
           aws s3 cp "s3://grocery-scrape-au/${save_path}" "./output/${save_path}" || true
       - run: python3 main.py sync woolies --skip-existing
