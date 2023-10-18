@@ -1,9 +1,11 @@
+import math
 import re
 import requests
 import json
 
 from .. import output, request, units
 import hotprices_au
+from hotprices_au.logging import logger
 
 
 class WooliesAPI:
@@ -64,8 +66,12 @@ class WooliesAPI:
         # page
         request_data['pageSize'] = 36
         product_count = 0
+        page_count = None
         while True:
-            print(f'Page {request_data["pageNumber"]}')
+            if page_count is None:
+                print(f'Page {request_data["pageNumber"]}')
+            else:
+                print(f'Page {request_data["pageNumber"]}/{page_count}')
             response = self.session.post(
                 'https://www.woolworths.com.au/apis/ui/browse/category',
                 json=request_data,
@@ -77,6 +83,11 @@ class WooliesAPI:
 
             # Next page calculation
             total_products = response_data['TotalRecordCount']
+
+            # Warn once if we expect more products that it can return
+            if total_products >= 10000 and page_count is None:
+                logger.warn(f'Category {cat_id} has too many products: {total_products}. Will only be able to fetch 10,000.')
+
             bundle_size = len(response_data['Bundles'])
             product_count += bundle_size
             if product_count >= total_products or bundle_size == 0:
@@ -89,6 +100,7 @@ class WooliesAPI:
 
             # Not done, go to next page
             request_data['pageNumber'] += 1
+            page_count = math.ceil(total_products / request_data['pageSize'])
 
     def get_categories(self):
         response = self.session.get('https://www.woolworths.com.au/apis/ui/PiesCategoriesWithSpecials')
