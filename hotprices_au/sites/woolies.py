@@ -40,7 +40,16 @@ class WooliesAPI:
                 "isSpecial": false,
                 "isBundle": false,
                 "isMobile": false,
-                "filters": [],
+                "filters": [
+                    {
+                        "Items": [
+                            {
+                                "Term": "Woolworths"
+                            }
+                        ],
+                        "Key": "SoldBy"
+                    }
+                ],
                 "token": "",
                 "gpBoost": 0,
                 "isHideUnavailableProducts": false,
