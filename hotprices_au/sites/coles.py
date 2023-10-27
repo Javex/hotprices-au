@@ -83,7 +83,11 @@ class ColesScraper:
         return categories
 
 def get_canonical(item, today):
-    if item['_type'] == 'SINGLE_TILE' and item.get('adId'):
+    ad_types = [
+        'SINGLE_TILE',
+        'CONTENT_ASSOCIATION',
+    ]
+    if item['_type'] in ad_types and item.get('adId'):
         # Ad tile, not a product
         return None
 
