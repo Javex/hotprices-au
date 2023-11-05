@@ -24,6 +24,7 @@ global_units = {
     'ml': {'unit': 'ml', 'factor': 1},
     'l': {'unit': 'ml', 'factor': 1000},
     'm': {'unit': 'cm', 'factor': 100},
+    'metre': {'unit': 'cm', 'factor': 100},
     'cm': {'unit': 'cm', 'factor': 1},
 }
 

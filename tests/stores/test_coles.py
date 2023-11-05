@@ -97,6 +97,12 @@ def test_get_canonical():
     assert can_item['quantity'] == 1
     assert not can_item['isWeighted']
 
+    item = get_item(size='2 metre', quantity=1, isWeighted=False)
+    can_item = coles.get_canonical(item, today)
+    assert can_item['unit'] == 'cm'
+    assert can_item['quantity'] == 200
+    assert not can_item['isWeighted']
+
 
 if __name__ == '__main__':
     test_get_canonical()
