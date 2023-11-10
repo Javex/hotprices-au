@@ -149,11 +149,19 @@ def get_quantity_and_unit(item):
 def parse_str_unit(size):
     # Try coles-special methods before going to the generic function
     size = size.lower()
-    matched = re.match(r'^.*can (?P<quantity>[0-9]+)(?P<unit>[a-z]+):pack(?P<count>[0-9]+)', size)
+    matched = re.match(r'^.* (?P<quantity>[0-9]+)(?P<unit>[a-z]+):(pack(?P<count>[0-9]+)|(?P<each>ea))', size)
     if matched:
         quantity = float(matched.group('quantity'))
         unit = matched.group('unit')
-        count = float(matched.group('count'))
+        count_match = matched.group('count')
+        if count_match:
+            count = float(count_match)
+        else:
+            each_str = matched.group('each')
+            if each_str:
+                count = 1
+            else:
+                raise RuntimeError("Didn't get a count, expected 'each'/'ea'")
         quantity *= count
         return quantity, unit
     else:

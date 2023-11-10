@@ -85,6 +85,12 @@ def test_get_canonical():
     assert can_item['quantity'] == 2250
     assert not can_item['isWeighted']
 
+    item = get_item(description='SMIRNOFF RED 37.5% VODKA 375ML:EA', quantity=0, isWeighted=False, size='')
+    can_item = coles.get_canonical(item, today)
+    assert can_item['unit'] == 'ml'
+    assert can_item['quantity'] == 375
+    assert not can_item['isWeighted']
+
     item = get_item(size='180g', ofMeasureUnits='g', quantity=1, isWeighted=False)
     can_item = coles.get_canonical(item, today)
     assert can_item['unit'] == 'g'
