@@ -79,6 +79,12 @@ def test_get_canonical():
     assert can_item['quantity'] == 16
     assert not can_item['isWeighted']
 
+    item = get_item(description='MINI CHRISTMAS CARD 20PK', quantity=0, isWeighted=False)
+    can_item = coles.get_canonical(item, today)
+    assert can_item['unit'] == 'ea'
+    assert can_item['quantity'] == 20
+    assert not can_item['isWeighted']
+
     item = get_item(description='BEER CAN 375ML:PACK6', quantity=0, isWeighted=False, size='')
     can_item = coles.get_canonical(item, today)
     assert can_item['unit'] == 'ml'

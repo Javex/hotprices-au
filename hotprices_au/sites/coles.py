@@ -95,6 +95,9 @@ def get_canonical(item, today):
         # No pricing information, can't process
         return None
 
+    match item['description']:
+        case 'MINI CHRISTMAS CARD 20PK': item['size'] = '20pk'
+
     quantity, unit = get_quantity_and_unit(item)
 
     name = item['name']
