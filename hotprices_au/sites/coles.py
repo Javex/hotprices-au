@@ -97,6 +97,7 @@ def get_canonical(item, today):
 
     match item['description']:
         case 'MINI CHRISTMAS CARD 20PK': item['size'] = '20pk'
+        case 'BOTTLE GIFT BAG': item['size'] = '1ea'
 
     quantity, unit = get_quantity_and_unit(item)
 
