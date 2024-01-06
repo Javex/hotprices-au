@@ -100,7 +100,13 @@ def test_get_canonical():
     item = get_item(description='MOON DOG FIZZER SELTZER 6% CAN 330ML (10PK):CTN30', quantity=0, isWeighted=False, size='')
     can_item = coles.get_canonical(item, today)
     assert can_item['unit'] == 'ml'
-    assert can_item['quantity'] == 3300
+    assert can_item['quantity'] == 9900
+    assert not can_item['isWeighted']
+
+    item = get_item(description='HARD SOLO CAN 375ML 10PK:CTN30', quantity=0, isWeighted=False, size='')
+    can_item = coles.get_canonical(item, today)
+    assert can_item['unit'] == 'ml'
+    assert can_item['quantity'] == 11250
     assert not can_item['isWeighted']
 
     item = get_item(description='SMIRNOFF RED 37.5% VODKA 375ML:EA', quantity=0, isWeighted=False, size='')

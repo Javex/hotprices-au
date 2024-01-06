@@ -156,14 +156,21 @@ def parse_str_unit(size):
     matches = [
         re.match(r'^.* (?P<quantity>[0-9]+)(?P<unit>[a-z]+):(pack(?P<count>[0-9]+)|(?P<each>ea))', size),
         re.match(r'^.* (?P<count>[0-9]+)pk can (?P<quantity>[0-9]+)(?P<unit>[a-z]+)', size),
-        re.match(r'^.* (?P<quantity>[0-9]+)(?P<unit>[a-z]+) \((?P<count>[0-9]+)pk\)', size),
+        # re.match(r'^.* (?P<quantity>[0-9]+)(?P<unit>[a-z]+) \(?(?P<count>[0-9]+)pk\)?', size),
+        re.match(r'^.* (?P<quantity>[0-9]+)(?P<unit>[a-z]+) \(?(?P<count>[0-9]+)pk\)?(:ctn)?(?P<ctn_count>[0-9]+)?', size),
     ]
     for matched in matches:
         if matched:
             quantity = float(matched.group('quantity'))
             unit = matched.group('unit')
             count_match = matched.group('count')
-            if count_match:
+            try:
+                ctn_count_match = matched.group('ctn_count')
+            except IndexError:
+                ctn_count_match = False
+            if ctn_count_match:
+                count = float(ctn_count_match)
+            elif count_match:
                 count = float(count_match)
             else:
                 each_str = matched.group('each')
