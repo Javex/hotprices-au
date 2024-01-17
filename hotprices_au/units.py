@@ -61,15 +61,18 @@ def parse_str_unit(unit_str):
         if matched:
             try:
                 count_group = matched.group('count')
-                # We might match on 4x4 and not just 4, so we split by x, type case each and then multiply them
-                if 'x' in count_group:
-                    counts = count_group.split('x')
+                if count_group is None:
+                    count = 1
                 else:
-                    counts = [count_group]
-                counts = [float(c) for c in counts]
-                count = 1
-                for count_elem in counts:
-                    count *= count_elem
+                    # We might match on 4x4 and not just 4, so we split by x, type case each and then multiply them
+                    if count_group and 'x' in count_group:
+                        counts = count_group.split('x')
+                    else:
+                        counts = [count_group]
+                    counts = [float(c) for c in counts]
+                    count = 1
+                    for count_elem in counts:
+                        count *= count_elem
             except IndexError:
                 count = 1
 

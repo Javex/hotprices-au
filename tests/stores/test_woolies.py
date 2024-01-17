@@ -166,6 +166,11 @@ def test_get_canonical():
     assert can_item['unit'] == 'ml'
     assert can_item['quantity'] == 9000
 
+    item = get_item(PackageSize='200ml X Pack')
+    can_item = woolies.get_canonical(item, today)
+    assert can_item['unit'] == 'ml'
+    assert can_item['quantity'] == 200
+
 
 if __name__ == '__main__':
     test_get_canonical()
