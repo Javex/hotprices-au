@@ -47,13 +47,16 @@ def dedup_items(items):
     return dedup_items
 
 
-def merge_price_history(old_items, new_items):
+def merge_price_history(old_items, new_items, store_filter):
     if old_items is None:
         return new_items
 
     lookup = {}
     for old_item in old_items:
-        lookup[(old_item['store'], old_item['id'])] = old_item
+        if store_filter is not None and old_item['store'] != store_filter:
+            new_items.append(old_item)
+        else:
+            lookup[(old_item['store'], old_item['id'])] = old_item
 
     new_prices = {}
     for new_item in new_items:
@@ -100,7 +103,17 @@ def copy_items_to_site(latest_canonical_file, data_dir: pathlib.Path, compress):
             latest_canonical_file_store.write_text(store_data)
 
 
-def transform_data(day, output_dir, data_dir, store_filter=None, compress=False):
+def transform_data(
+        day, output_dir, data_dir,
+        store_filter=None,
+        compress=False,
+        require_history=True
+    ):
+    """
+    require_history: Whether to expect the "latest-canonical.json.gz" to
+        already exist. Default is true (updating history) but can be set
+        to false if doing a full history build.
+    """
     all_items = []
     for store in sites.sites.keys():
         if store_filter is not None and store_filter != store:
@@ -133,10 +146,10 @@ def transform_data(day, output_dir, data_dir, store_filter=None, compress=False)
         all_items += store_items
 
     latest_canonical_file = pathlib.Path(output_dir / "latest-canonical.json.gz")
-    if latest_canonical_file.exists():
+    if latest_canonical_file.exists() or require_history:
         with gzip.open(latest_canonical_file, 'rt') as fp:
             old_items = json.loads(fp.read())
-        all_items = merge_price_history(old_items, all_items)
+        all_items = merge_price_history(old_items, all_items, store_filter)
     
     with gzip.open(latest_canonical_file, 'wt') as fp:
         fp.write(json.dumps(all_items))
@@ -146,7 +159,7 @@ def transform_data(day, output_dir, data_dir, store_filter=None, compress=False)
 
 
 def parse_full_history(output_dir: pathlib.Path, data_dir, store_filter=None, compress=False):
-    # First remote canonical data
+    # First remove canonical data
     latest_canonical_file = output_dir / "latest-canonical.json.gz"
     if latest_canonical_file.exists():
         latest_canonical_file.unlink()
@@ -161,4 +174,4 @@ def parse_full_history(output_dir: pathlib.Path, data_dir, store_filter=None, co
         for data_file in sorted(store.iterdir()):
             fname = data_file.name
             day = datetime.strptime(fname.split('.')[0], '%Y-%m-%d')
-            transform_data(day, output_dir, data_dir, store_filter=store.name, compress=compress)
+            transform_data(day, output_dir, data_dir, store_filter=store.name, compress=compress, require_history=False)

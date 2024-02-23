@@ -93,8 +93,9 @@ jobs:
         with:
           role-to-assume: "${{ vars.TARGET_ROLE_ARN }}"
           aws-region: ap-southeast-2
-      # Sync copies the file down if it exists, skips otherwise
-      - run: aws s3 sync s3://grocery-scrape-au/latest-canonical.json.gz ./output/
+      # Use "cp" because it is an error if the file doesn't exist. It means history
+      # is broken and needs to be built from scratch locally.
+      - run: aws s3 cp s3://grocery-scrape-au/latest-canonical.json.gz ./output/
       - run: python3 main.py analysis --compress
       - uses: actions/upload-artifact@v3
         with:
