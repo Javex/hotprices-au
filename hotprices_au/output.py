@@ -1,4 +1,3 @@
-import pathlib
 import json
 import gzip
 from datetime import datetime
