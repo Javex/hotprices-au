@@ -1,6 +1,7 @@
 from hotprices_au.sites import coles
 
-def get_item(ofMeasureUnits=None, quantity=None, isWeighted=True, pricing=True, size=None, **kwargs):
+def get_item(ofMeasureUnits=None, quantity=None, isWeighted=True, pricing=True,
+             size=None, comparable=None, **kwargs):
     defaults = {
         '_type': 'PRODUCT',
         'id': '1',
@@ -25,6 +26,9 @@ def get_item(ofMeasureUnits=None, quantity=None, isWeighted=True, pricing=True, 
 
     if quantity is not None:
         defaults['pricing']['unit']['quantity'] = quantity
+
+    if comparable is not None:
+        defaults['pricing']['comparable'] = comparable
 
     if pricing is None:
         defaults['pricing'] = None
@@ -132,6 +136,12 @@ def test_get_canonical():
     assert can_item['unit'] == 'cm'
     assert can_item['quantity'] == 200
     assert not can_item['isWeighted']
+
+    item = get_item(comparable='$10.00 per 1ea', quantity=0)
+    can_item = coles.get_canonical(item, today)
+    assert can_item['unit'] == 'ea'
+    assert can_item['quantity'] == 1
+    assert can_item['price'] == 10
 
 
 if __name__ == '__main__':

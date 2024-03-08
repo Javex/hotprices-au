@@ -144,11 +144,36 @@ def get_quantity_and_unit(item):
         # If that didn't work we can now try to get the info from standard sizes (e.g. per 100g)
         if 'ofMeasureUnits' in unit_data:
             unit = unit_data['ofMeasureUnits']
+        elif item.get('pricing',{}).get('comparable'):
+            return parse_comparable(item)
         else:
             raise
 
     return quantity, unit
 
+
+def parse_comparable(item):
+    comparable = item['pricing']['comparable']
+    m = re.match(r'\$([\.0-9]+) per (.*)', comparable)
+    if not m:
+        raise RuntimeError(f"Unable to parse comparable {comparable}")
+
+    price_str, per_str = m.group(1), m.group(2)
+    price_per = float(price_str)
+    if price_per != item['pricing']['now']:
+        raise RuntimeError(
+            f"Price from {comparable} extracted as {price_per} "
+            f"does not match expected price of {item['pricing']['now']}"
+        )
+
+    if per_str == '1ea':
+        quantity, unit = 1, 'ea'
+    else:
+        raise RuntimeError(
+            f"Unable to understad what {per_str} means from "
+            f"{comparable}"
+        )
+    return quantity, unit
 
 def parse_str_unit(size):
     # Try coles-special methods before going to the generic function
