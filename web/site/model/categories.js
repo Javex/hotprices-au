@@ -35,20 +35,12 @@ exports.categories = [
         ],
     },
     {
-        name: "🥚🥛🥩 Kühlwaren",
+        name: "🥩🦐 Meat & Seafood",
         subcategories: [
-            /*30*/ "Schnelle Küche",
-            /*31*/ "Eier",
-            /*32*/ "Fleisch",
-            /*33*/ "Käse, Aufstriche & Salate",
-            /*34*/ "Milchprodukte",
-            /*35*/ "Feinkostplatten & Brötchen",
-            /*36*/ "Blätterteig, Strudelteig",
-            /*37*/ "Wurst, Schinken & Speck",
-            /*38*/ "Feinkost",
-            /*39*/ "Fisch",
-            /*3A*/ "Unbekannt", // Not available in Billa hierarchy, left blank
-            /*3B*/ "Vegetarisch, Tofu, Soja & Co",
+            /*30*/ "Poultry",
+            /*31*/ "Meat",
+            /*32*/ "Seafood",
+            /*33*/ "BBQ",
         ],
     },
     {
