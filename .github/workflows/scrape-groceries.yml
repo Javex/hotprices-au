@@ -1,8 +1,8 @@
 name: Scrape Groceries
 on:
   workflow_dispatch:
-  # schedule:
-  # - cron: "0 1 * * *"  # Daily at 1am UTC (12pm AEST)
+  schedule:
+  - cron: "0 1 * * *"  # Daily at 1am UTC (12pm AEST)
 env:
   AWS_REGION: ap-southeast-2
 jobs:
@@ -101,9 +101,9 @@ jobs:
         with:
           name: latest_canonical
           path: ./output/latest-canonical.json.gz
-      # - name: Upload all files after finished analysis
-      #   # The content-encoding is necessary so that S3 sends the correct content-encoding header on GET
-      #   run: |
-      #     aws s3 sync ./output/ s3://grocery-scrape-au/
-      #     aws s3 cp --content-encoding gzip static/data/latest-canonical.woolies.compressed.json.gz s3://hotprices.org/data/
-      #     aws s3 cp --content-encoding gzip static/data/latest-canonical.coles.compressed.json.gz s3://hotprices.org/data/
+      - name: Upload all files after finished analysis
+        # The content-encoding is necessary so that S3 sends the correct content-encoding header on GET
+        run: |
+          aws s3 sync ./output/ s3://grocery-scrape-au/
+          aws s3 cp --content-encoding gzip static/data/latest-canonical.woolies.compressed.json.gz s3://hotprices.org/data/
+          aws s3 cp --content-encoding gzip static/data/latest-canonical.coles.compressed.json.gz s3://hotprices.org/data/
