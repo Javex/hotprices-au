@@ -4,3 +4,4 @@ tmp/**
 __pycache__
 .vscode/**
 web/node_modules/**
+.DS_Store

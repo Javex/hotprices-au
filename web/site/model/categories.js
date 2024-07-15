@@ -223,7 +223,6 @@ exports.categories = [
     },
 ];
 
-
 exports.categories.forEach((category, index) => (category.index = index));
 
 exports.toCategoryCode = (i, j) => {
