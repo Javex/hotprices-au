@@ -6,140 +6,223 @@ exports.categories = [
     {
         name: "🍌🥑 Fruit & Veg",
         subcategories: [
-            /*00*/ "Fruit",
-            /*01*/ "Veg",
-            /*02*/ "Salad & Herbs",
-            /*03*/ "Nuts & Dried Fruit",
-        ],
-    },
-    {
-        name: "🍞🥐 Bread & Pastries",
-        subcategories: [
-            /*10*/ "Rolls & Toast",
-            /*11*/ "Bread & Pastries",
-            /*12*/ "Crispbread & Zwieback",
-            /*13*/ "Cakes & Co.",
-            /*14*/ "Breadcrumbs & Crumbs",
-        ],
-    },
-    {
-        name: "🥤🍺 Beverages",
-        subcategories: [
-            /*20*/ "Non-Alcoholic Beverages",
-            /*21*/ "Beer & Shandy",
-            /*22*/ "Coffee, Tea & Co.",
-            /*23*/ "Sparkling Wine & Champagne",
-            /*24*/ "Spirits",
-            /*25*/ "Wine",
-            /*26*/ "Mineral Water",
-        ],
+            /*00*/ "Fresh Fruit",
+            /*01*/ "Fresh Vegetables",
+            /*02*/ "Fresh Salad & Herbs",
+            /*03*/ "Organic Fruit & Vegetables",
+            /*04*/ "Prepared Fresh Produce",
+            /*05*/ "Frozen Fruit & Vegetables"
+        ]
     },
     {
         name: "🥩🦐 Meat & Seafood",
         subcategories: [
-            /*30*/ "Poultry",
-            /*31*/ "Meat",
-            /*32*/ "Seafood",
-            /*33*/ "BBQ",
-        ],
+            /*06*/ "Meat & Seafood",
+            /*07*/ "Beef & Veal",
+            /*08*/ "Lamb",
+            /*09*/ "Pork",
+            /*10*/ "Poultry",
+            /*11*/ "Seafood",
+            /*12*/ "Sausages, Burgers & Meatballs",
+            /*13*/ "Marinated & Prepped Meats",
+            /*14*/ "Frozen Meat & Seafood"
+        ]
+    },
+    {
+        name: "🥚🧀 Dairy, Eggs & Fridge",
+        subcategories: [
+            /*15*/ "Dairy, Eggs & Fridge",
+            /*16*/ "Milk",
+            /*17*/ "Eggs",
+            /*18*/ "Yogurt",
+            /*19*/ "Cheese",
+            /*20*/ "Butter & Margarine",
+            /*21*/ "Cream & Desserts",
+            /*22*/ "Dips & Cold Packaged Meats",
+            /*23*/ "Tofu, Tempeh & Meat Alternatives",
+            /*24*/ "Fresh Pasta & Sauces",
+            /*25*/ "Chilled Juice",
+            /*26*/ "Salads & Salad Kits",
+            /*27*/ "Ready Meals & Snacks"
+        ]
+    },
+    {
+        name: "🛒🍫 Pantry",
+        subcategories: [
+            /*28*/ "Pantry",
+            /*29*/ "Biscuits & Crackers",
+            /*30*/ "Breakfast & Spreads",
+            /*31*/ "Canned Goods",
+            /*32*/ "Pasta & Noodles",
+            /*33*/ "Rice & Grains",
+            /*34*/ "Cooking & Baking Needs",
+            /*35*/ "Condiments & Dressings",
+            /*36*/ "Healthy Snacks & Foods",
+            /*37*/ "Soup",
+            /*38*/ "Packaged Meals",
+            /*39*/ "Savoury Snacks",
+            /*40*/ "Confectionery",
+            /*41*/ "International Foods"
+        ]
+    },
+    {
+        name: "🍞🥐 Bakery",
+        subcategories: [
+            /*42*/ "Bakery",
+            /*43*/ "Bread Rolls & Wraps",
+            /*44*/ "Cakes, Muffins & Pastries",
+            /*45*/ "Bakery Snacks",
+            /*46*/ "Bakery Bread",
+            /*47*/ "Flatbread"
+        ]
     },
     {
         name: "🧊🍦 Frozen",
         subcategories: [
-            /*40*/ "Ice Cream",
-            /*41*/ "Unknown", // Not available in Billa hierarchy, left blank
-            /*42*/ "Ready Meals",
-            /*43*/ "Fish & Shrimp",
-            /*44*/ "Vegetables & Herbs",
-            /*45*/ "French Fries & Co.",
-            /*46*/ "Pizza & Baguette",
-            /*47*/ "Desserts & Fruits",
-        ],
+            /*48*/ "Frozen",
+            /*49*/ "Frozen Meals",
+            /*50*/ "Frozen Meat & Poultry",
+            /*51*/ "Frozen Seafood",
+            /*52*/ "Frozen Vegetables & Fruit",
+            /*53*/ "Frozen Chips, Wedges & Potatoes",
+            /*54*/ "Ice Cream & Frozen Desserts",
+            /*55*/ "Frozen Party Food"
+        ]
     },
     {
-        name: "🌾 Basic Food",
+        name: "🥤🍺 Drinks",
         subcategories: [
-            /*50*/ "Asian & Mexican Products",
-            /*51*/ "Baby",
-            /*52*/ "Baking",
-            /*53*/ "Vinegar & Oil",
-            /*54*/ "Ready Meals",
-            /*55*/ "Spices & Seasonings",
-            /*56*/ "Honey, Jam & Co.",
-            /*57*/ "Canned & Pickled Foods",
-            /*58*/ "Cakes & Co.",
-            /*59*/ "Flour & Grain Products",
-            /*5A*/ "Muesli & Cereals",
-            /*5B*/ "Rice, Pasta & Sauces",
-            /*5C*/ "Sauces & Dressings",
-            /*5D*/ "Special Diet",
-            /*5E*/ "Sugar & Sweeteners",
-            /*5F*/ "Convenience Products",
-        ],
+            /*56*/ "Drinks",
+            /*57*/ "Juice",
+            /*58*/ "Soft Drinks",
+            /*59*/ "Mineral Water",
+            /*60*/ "Energy Drinks",
+            /*61*/ "Iced Tea",
+            /*62*/ "Cordials",
+            /*63*/ "Syrups",
+            /*64*/ "Sports Drinks"
+        ]
     },
     {
-        name: "🍫🍿 Sweets & Savory Snacks",
+        name: "👄💅 Beauty & Personal Care",
         subcategories: [
-            /*60*/ "Ladyfingers & Ice Cream Cones",
-            /*61*/ "Smart Treats",
-            /*62*/ "Muesli Bars",
-            /*63*/ "Chips & Co.",
-            /*64*/ "Sweets",
-        ],
+            /*65*/ "Beauty & Personal Care",
+            /*66*/ "Feminine Hygiene",
+            /*67*/ "Hair Care",
+            /*68*/ "Men's Grooming",
+            /*69*/ "Oral Care",
+            /*70*/ "Shaving & Hair Removal",
+            /*71*/ "Skin Care",
+            /*72*/ "Cosmetics",
+            /*73*/ "Period Care",
+            /*74*/ "Continence Care",
+            /*75*/ "Personal Care & Hygiene",
+            /*76*/ "First Aid & Medicinal",
+            /*77*/ "Women's Hair Removal",
+            /*78*/ "Hampers & Gifting",
+            /*79*/ "Everyday Market"
+        ]
     },
     {
-        name: "👄👶 Personal Care",
+        name: "🍷🍻 Liquor",
         subcategories: [
-            /*70*/ "Baby",
-            /*71*/ "Feminine Hygiene",
-            /*72*/ "Deodorants",
-            /*73*/ "Hair Care & Hair Colors",
-            /*74*/ "Plasters & Bandages",
-            /*75*/ "Skin & Lip Care",
-            /*76*/ "Oral Hygiene",
-            /*77*/ "Shaving Needs",
-            /*78*/ "Soap & Shower Gels",
-            /*79*/ "Sun & Gel Protection",
-            /*7A*/ "Contraceptives",
-            /*7B*/ "Foot Care",
-            /*7C*/ "Tights & Socks",
-        ],
+            /*80*/ "Liquor",
+            /*81*/ "Liquor Specials",
+            /*82*/ "Beer",
+            /*83*/ "Cider",
+            /*84*/ "White Wine",
+            /*85*/ "Red Wine",
+            /*86*/ "Champagne & Sparkling",
+            /*87*/ "Fortified & Cask Wine",
+            /*88*/ "Spirits",
+            /*89*/ "Premixed Drinks"
+        ]
     },
     {
-        name: "🧹🧺 Household",
+        name: "💊🩺 HealthyLife Pharmacy",
         subcategories: [
-            /*80*/ "Office & School Supplies",
-            /*81*/ "Garden",
-            /*82*/ "Adhesives & Fasteners",
-            /*83*/ "Kitchen Items",
-            /*84*/ "Kitchen Rolls & Toilet Paper",
-            /*85*/ "Lamps & Batteries",
-            /*86*/ "Garbage Bags, Freezer Bags & Co.",
-            /*87*/ "Room Sprays & Candles",
-            /*88*/ "Cleaning & Care",
-            /*89*/ "Tissues & Napkins",
-            /*8A*/ "Laundry Detergent & Fabric Softener",
-            /*8B*/ "Shoe Care",
-            /*8C*/ "Plastic Containers",
-            /*8D*/ "Insect Repellent",
-            /*8E*/ "Toys",
-            /*8F*/ "Hygiene Protection Items",
-        ],
+            /*90*/ "HealthyLife Pharmacy",
+            /*91*/ "HealthyLife Pharmacy Specials",
+            /*92*/ "Prescription Medicine",
+            /*93*/ "Pharmacist Only Medicine",
+            /*94*/ "Pharmacy Medicine"
+        ]
+    },
+    {
+        name: "👶🍼 Baby",
+        subcategories: [
+            /*95*/ "Baby",
+            /*96*/ "Baby Specials",
+            /*97*/ "Pregnancy Tests",
+            /*98*/ "Nappies & Wipes",
+            /*99*/ "Baby Food",
+            /*100*/ "Baby Accessories",
+            /*101*/ "Baby Formula & Toddler Milk",
+            /*102*/ "Baby Furniture",
+            /*103*/ "Baby Travel & Accessories",
+            /*104*/ "Hampers & Gifting",
+            /*105*/ "Everyday Market"
+        ]
     },
     {
         name: "🐶🐱 Pet",
         subcategories: [
-            /*90*/ "Dogs",
-            /*91*/ "Cats",
-            /*92*/ "Rodents",
-            /*93*/ "Birds",
-        ],
+            /*106*/ "Pet",
+            /*107*/ "Pet Specials",
+            /*108*/ "Cat & Kitten",
+            /*109*/ "Dog & Puppy",
+            /*110*/ "Birds, Fish & Small Pets",
+            /*111*/ "Everyday Market"
+        ]
+    },
+    {
+        name: "🧼🧽 Cleaning",
+        subcategories: [
+            /*112*/ "Cleaning",
+            /*113*/ "Cleaning Specials",
+            /*114*/ "Laundry",
+            /*115*/ "Kitchen",
+            /*116*/ "Toilet Paper, Tissues & Paper Towels",
+            /*117*/ "Cleaning Goods",
+            /*118*/ "Pest Control",
+            /*119*/ "Garden & Outdoors",
+            /*120*/ "Hardware",
+            /*121*/ "Bathroom",
+            /*122*/ "Homewares",
+            /*123*/ "Electronics",
+            /*124*/ "Sport & Fitness"
+        ]
+    },
+    {
+        name: "🏠🛋️ Home & Lifestyle",
+        subcategories: [
+            /*125*/ "Home & Lifestyle",
+            /*126*/ "Home & Lifestyle Specials",
+            /*127*/ "Dining & Entertaining",
+            /*128*/ "Party Supplies",
+            /*129*/ "Kitchenware & Storage",
+            /*130*/ "Kitchen Appliances",
+            /*131*/ "Home Appliances",
+            /*132*/ "Home Decor & Furniture",
+            /*133*/ "Manchester & Bedding",
+            /*134*/ "Bathroom Towels & Accessories",
+            /*135*/ "Clothing & Accessories",
+            /*136*/ "Electronics",
+            /*137*/ "Stationery & Office Supplies",
+            /*138*/ "Toys & Games",
+            /*139*/ "Books & Magazines",
+            /*140*/ "Outdoor Living",
+            /*141*/ "Luggage & Travel",
+            /*142*/ "Sport, Fitness & Outdoor Activities",
+            /*143*/ "Everyday Market"
+        ]
     },
     {
         name: "Unknown",
         subcategories: [/*A0*/ "Unknown"],
     },
 ];
+
 
 exports.categories.forEach((category, index) => (category.index = index));
 
