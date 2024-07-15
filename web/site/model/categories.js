@@ -47,7 +47,7 @@ exports.categories = [
         name: "🧊🍦 Tiefkühl",
         subcategories: [
             /*40*/ "Eis",
-            /*41*/ "Unbekannt", // Not available in Billa hierarchy, left blank
+            /*41*/ "Unknown", // Not available in Billa hierarchy, left blank
             /*42*/ "Fertiggerichte",
             /*43*/ "Fisch & Garnelen",
             /*44*/ "Gemüse & Kräuter",
@@ -136,8 +136,8 @@ exports.categories = [
         ],
     },
     {
-        name: "Unbekannt",
-        subcategories: [/*A0*/ "Unbekannt"],
+        name: "Unknown",
+        subcategories: [/*A0*/ "Unknown"],
     },
 ];
 
