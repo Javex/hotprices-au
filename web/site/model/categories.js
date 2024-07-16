@@ -4,264 +4,702 @@
 // field. E.g. "Obst & Gemüse > Salate" has the code "13", "Kühlwaren > Tofu" has the code "4C"
 exports.categories = [
     {
-        name: "🍌🥑 Fruit & Veg",
-        subcategories: [
-            /*00*/ "Fresh Fruit",
-            /*01*/ "Fresh Vegetables",
-            /*02*/ "Fresh Salad & Herbs",
-            /*03*/ "Organic Fruit & Vegetables",
-            /*04*/ "Prepared Fresh Produce",
-            /*05*/ "Frozen Fruit & Vegetables"
-        ]
+       name: "🍌🥑 Fruit & Veg",
+       subcategories: [
+        {
+           code: "000",
+           name: "Fresh Fruit"
+        },
+        {
+           code: "001",
+           name: "Fresh Vegetables"
+        },
+        {
+           code: "002",
+           name: "Fresh Salad & Herbs"
+        },
+        {
+           code: "003",
+           name: "Organic Fruit & Vegetables"
+        },
+        {
+           code: "004",
+           name: "Prepared Fresh Produce"
+        },
+        {
+           code: "005",
+           name: "Frozen Fruit & Vegetables"
+        }
+      ]
     },
     {
-        name: "🥩🦐 Meat & Seafood",
-        subcategories: [
-            /*06*/ "Meat & Seafood",
-            /*07*/ "Beef & Veal",
-            /*08*/ "Lamb",
-            /*09*/ "Pork",
-            /*10*/ "Poultry",
-            /*11*/ "Seafood",
-            /*12*/ "Sausages, Burgers & Meatballs",
-            /*13*/ "Marinated & Prepped Meats",
-            /*14*/ "Frozen Meat & Seafood"
-        ]
+       name: "🥩🦐 Meat & Seafood",
+       subcategories: [
+        {
+           code: "106",
+           name: "Meat & Seafood"
+        },
+        {
+           code: "107",
+           name: "Beef & Veal"
+        },
+        {
+           code: "108",
+           name: "Lamb"
+        },
+        {
+           code: "109",
+           name: "Pork"
+        },
+        {
+           code: "110",
+           name: "Poultry"
+        },
+        {
+           code: "111",
+           name: "Seafood"
+        },
+        {
+           code: "112",
+           name: "Sausages, Burgers & Meatballs"
+        },
+        {
+           code: "113",
+           name: "Marinated & Prepped Meats"
+        },
+        {
+           code: "114",
+           name: "Frozen Meat & Seafood"
+        }
+      ]
     },
     {
-        name: "🥚🧀 Dairy, Eggs & Fridge",
-        subcategories: [
-            /*15*/ "Dairy, Eggs & Fridge",
-            /*16*/ "Milk",
-            /*17*/ "Eggs",
-            /*18*/ "Yogurt",
-            /*19*/ "Cheese",
-            /*20*/ "Butter & Margarine",
-            /*21*/ "Cream & Desserts",
-            /*22*/ "Dips & Cold Packaged Meats",
-            /*23*/ "Tofu, Tempeh & Meat Alternatives",
-            /*24*/ "Fresh Pasta & Sauces",
-            /*25*/ "Chilled Juice",
-            /*26*/ "Salads & Salad Kits",
-            /*27*/ "Ready Meals & Snacks"
-        ]
+       name: "🥚🧀 Dairy, Eggs & Fridge",
+       subcategories: [
+        {
+           code: "215",
+           name: "Dairy, Eggs & Fridge"
+        },
+        {
+           code: "216",
+           name: "Milk"
+        },
+        {
+           code: "217",
+           name: "Eggs"
+        },
+        {
+           code: "218",
+           name: "Yogurt"
+        },
+        {
+           code: "219",
+           name: "Cheese"
+        },
+        {
+           code: "220",
+           name: "Butter & Margarine"
+        },
+        {
+           code: "221",
+           name: "Cream & Desserts"
+        },
+        {
+           code: "222",
+           name: "Dips & Cold Packaged Meats"
+        },
+        {
+           code: "223",
+           name: "Tofu, Tempeh & Meat Alternatives"
+        },
+        {
+           code: "224",
+           name: "Fresh Pasta & Sauces"
+        },
+        {
+           code: "225",
+           name: "Chilled Juice"
+        },
+        {
+           code: "226",
+           name: "Salads & Salad Kits"
+        },
+        {
+           code: "227",
+           name: "Ready Meals & Snacks"
+        }
+      ]
     },
     {
-        name: "🛒🍫 Pantry",
-        subcategories: [
-            /*28*/ "Pantry",
-            /*29*/ "Biscuits & Crackers",
-            /*30*/ "Breakfast & Spreads",
-            /*31*/ "Canned Goods",
-            /*32*/ "Pasta & Noodles",
-            /*33*/ "Rice & Grains",
-            /*34*/ "Cooking & Baking Needs",
-            /*35*/ "Condiments & Dressings",
-            /*36*/ "Healthy Snacks & Foods",
-            /*37*/ "Soup",
-            /*38*/ "Packaged Meals",
-            /*39*/ "Savoury Snacks",
-            /*40*/ "Confectionery",
-            /*41*/ "International Foods"
-        ]
+       name: "🛒🍫 Pantry",
+       subcategories: [
+        {
+           code: "328",
+           name: "Pantry"
+        },
+        {
+           code: "329",
+           name: "Biscuits & Crackers"
+        },
+        {
+           code: "330",
+           name: "Breakfast & Spreads"
+        },
+        {
+           code: "331",
+           name: "Canned Goods"
+        },
+        {
+           code: "332",
+           name: "Pasta & Noodles"
+        },
+        {
+           code: "333",
+           name: "Rice & Grains"
+        },
+        {
+           code: "334",
+           name: "Cooking & Baking Needs"
+        },
+        {
+           code: "335",
+           name: "Condiments & Dressings"
+        },
+        {
+           code: "336",
+           name: "Healthy Snacks & Foods"
+        },
+        {
+           code: "337",
+           name: "Soup"
+        },
+        {
+           code: "338",
+           name: "Packaged Meals"
+        },
+        {
+           code: "339",
+           name: "Savoury Snacks"
+        },
+        {
+           code: "340",
+           name: "Confectionery"
+        },
+        {
+           code: "341",
+           name: "International Foods"
+        }
+      ]
     },
     {
-        name: "🍞🥐 Bakery",
-        subcategories: [
-            /*42*/ "Bakery",
-            /*43*/ "Bread Rolls & Wraps",
-            /*44*/ "Cakes, Muffins & Pastries",
-            /*45*/ "Bakery Snacks",
-            /*46*/ "Bakery Bread",
-            /*47*/ "Flatbread"
-        ]
+       name: "🍞🥐 Bakery",
+       subcategories: [
+        {
+           code: "442",
+           name: "Bakery"
+        },
+        {
+           code: "443",
+           name: "Bread Rolls & Wraps"
+        },
+        {
+           code: "444",
+           name: "Cakes, Muffins & Pastries"
+        },
+        {
+           code: "445",
+           name: "Bakery Snacks"
+        },
+        {
+           code: "446",
+           name: "Bakery Bread"
+        },
+        {
+           code: "447",
+           name: "Flatbread"
+        }
+      ]
     },
     {
-        name: "🧊🍦 Frozen",
-        subcategories: [
-            /*48*/ "Frozen",
-            /*49*/ "Frozen Meals",
-            /*50*/ "Frozen Meat & Poultry",
-            /*51*/ "Frozen Seafood",
-            /*52*/ "Frozen Vegetables & Fruit",
-            /*53*/ "Frozen Chips, Wedges & Potatoes",
-            /*54*/ "Ice Cream & Frozen Desserts",
-            /*55*/ "Frozen Party Food"
-        ]
+       name: "🧊🍦 Frozen",
+       subcategories: [
+        {
+           code: "548",
+           name: "Frozen"
+        },
+        {
+           code: "549",
+           name: "Frozen Meals"
+        },
+        {
+           code: "550",
+           name: "Frozen Meat & Poultry"
+        },
+        {
+           code: "551",
+           name: "Frozen Seafood"
+        },
+        {
+           code: "552",
+           name: "Frozen Vegetables & Fruit"
+        },
+        {
+           code: "553",
+           name: "Frozen Chips, Wedges & Potatoes"
+        },
+        {
+           code: "554",
+           name: "Ice Cream & Frozen Desserts"
+        },
+        {
+           code: "555",
+           name: "Frozen Party Food"
+        }
+      ]
     },
     {
-        name: "🥤🍺 Drinks",
-        subcategories: [
-            /*56*/ "Drinks",
-            /*57*/ "Juice",
-            /*58*/ "Soft Drinks",
-            /*59*/ "Mineral Water",
-            /*60*/ "Energy Drinks",
-            /*61*/ "Iced Tea",
-            /*62*/ "Cordials",
-            /*63*/ "Syrups",
-            /*64*/ "Sports Drinks"
-        ]
+       name: "🥤🍺 Drinks",
+       subcategories: [
+        {
+           code: "656",
+           name: "Drinks"
+        },
+        {
+           code: "657",
+           name: "Juice"
+        },
+        {
+           code: "658",
+           name: "Soft Drinks"
+        },
+        {
+           code: "659",
+           name: "Mineral Water"
+        },
+        {
+           code: "660",
+           name: "Energy Drinks"
+        },
+        {
+           code: "661",
+           name: "Iced Tea"
+        },
+        {
+           code: "662",
+           name: "Cordials"
+        },
+        {
+           code: "663",
+           name: "Syrups"
+        },
+        {
+           code: "664",
+           name: "Sports Drinks"
+        }
+      ]
     },
     {
-        name: "👄💅 Beauty & Personal Care",
-        subcategories: [
-            /*65*/ "Beauty & Personal Care",
-            /*66*/ "Feminine Hygiene",
-            /*67*/ "Hair Care",
-            /*68*/ "Men's Grooming",
-            /*69*/ "Oral Care",
-            /*70*/ "Shaving & Hair Removal",
-            /*71*/ "Skin Care",
-            /*72*/ "Cosmetics",
-            /*73*/ "Period Care",
-            /*74*/ "Continence Care",
-            /*75*/ "Personal Care & Hygiene",
-            /*76*/ "First Aid & Medicinal",
-            /*77*/ "Women's Hair Removal",
-            /*78*/ "Hampers & Gifting",
-            /*79*/ "Everyday Market"
-        ]
+       name: "👄💅 Beauty & Personal Care",
+       subcategories: [
+        {
+           code: "765",
+           name: "Beauty & Personal Care"
+        },
+        {
+           code: "766",
+           name: "Feminine Hygiene"
+        },
+        {
+           code: "767",
+           name: "Hair Care"
+        },
+        {
+           code: "768",
+           name: "Men's Grooming"
+        },
+        {
+           code: "769",
+           name: "Oral Care"
+        },
+        {
+           code: "770",
+           name: "Shaving & Hair Removal"
+        },
+        {
+           code: "771",
+           name: "Skin Care"
+        },
+        {
+           code: "772",
+           name: "Cosmetics"
+        },
+        {
+           code: "773",
+           name: "Period Care"
+        },
+        {
+           code: "774",
+           name: "Continence Care"
+        },
+        {
+           code: "775",
+           name: "Personal Care & Hygiene"
+        },
+        {
+           code: "776",
+           name: "First Aid & Medicinal"
+        },
+        {
+           code: "777",
+           name: "Women's Hair Removal"
+        },
+        {
+           code: "778",
+           name: "Hampers & Gifting"
+        },
+        {
+           code: "779",
+           name: "Everyday Market"
+        }
+      ]
     },
     {
-        name: "🍷🍻 Liquor",
-        subcategories: [
-            /*80*/ "Liquor",
-            /*81*/ "Liquor Specials",
-            /*82*/ "Beer",
-            /*83*/ "Cider",
-            /*84*/ "White Wine",
-            /*85*/ "Red Wine",
-            /*86*/ "Champagne & Sparkling",
-            /*87*/ "Fortified & Cask Wine",
-            /*88*/ "Spirits",
-            /*89*/ "Premixed Drinks"
-        ]
+       name: "🍷🍻 Liquor",
+       subcategories: [
+        {
+           code: "880",
+           name: "Liquor"
+        },
+        {
+           code: "881",
+           name: "Liquor Specials"
+        },
+        {
+           code: "882",
+           name: "Beer"
+        },
+        {
+           code: "883",
+           name: "Cider"
+        },
+        {
+           code: "884",
+           name: "White Wine"
+        },
+        {
+           code: "885",
+           name: "Red Wine"
+        },
+        {
+           code: "886",
+           name: "Champagne & Sparkling"
+        },
+        {
+           code: "887",
+           name: "Fortified & Cask Wine"
+        },
+        {
+           code: "888",
+           name: "Spirits"
+        },
+        {
+           code: "889",
+           name: "Premixed Drinks"
+        }
+      ]
     },
     {
-        name: "💊🩺 HealthyLife Pharmacy",
-        subcategories: [
-            /*90*/ "HealthyLife Pharmacy",
-            /*91*/ "HealthyLife Pharmacy Specials",
-            /*92*/ "Prescription Medicine",
-            /*93*/ "Pharmacist Only Medicine",
-            /*94*/ "Pharmacy Medicine"
-        ]
+       name: "💊🩺 HealthyLife Pharmacy",
+       subcategories: [
+        {
+           code: "990",
+           name: "HealthyLife Pharmacy"
+        },
+        {
+           code: "991",
+           name: "HealthyLife Pharmacy Specials"
+        },
+        {
+           code: "992",
+           name: "Prescription Medicine"
+        },
+        {
+           code: "993",
+           name: "Pharmacist Only Medicine"
+        },
+        {
+           code: "994",
+           name: "Pharmacy Medicine"
+        }
+      ]
     },
     {
-        name: "👶🍼 Baby",
-        subcategories: [
-            /*95*/ "Baby",
-            /*96*/ "Baby Specials",
-            /*97*/ "Pregnancy Tests",
-            /*98*/ "Nappies & Wipes",
-            /*99*/ "Baby Food",
-            /*100*/ "Baby Accessories",
-            /*101*/ "Baby Formula & Toddler Milk",
-            /*102*/ "Baby Furniture",
-            /*103*/ "Baby Travel & Accessories",
-            /*104*/ "Hampers & Gifting",
-            /*105*/ "Everyday Market"
-        ]
+       name: "👶🍼 Baby",
+       subcategories: [
+        {
+           code: "1095",
+           name: "Baby"
+        },
+        {
+           code: "1096",
+           name: "Baby Specials"
+        },
+        {
+           code: "1097",
+           name: "Pregnancy Tests"
+        },
+        {
+           code: "1098",
+           name: "Nappies & Wipes"
+        },
+        {
+           code: "1099",
+           name: "Baby Food"
+        },
+        {
+           code: "10100",
+           name: "Baby Accessories"
+        },
+        {
+           code: "10101",
+           name: "Baby Formula & Toddler Milk"
+        },
+        {
+           code: "10102",
+           name: "Baby Furniture"
+        },
+        {
+           code: "10103",
+           name: "Baby Travel & Accessories"
+        },
+        {
+           code: "10104",
+           name: "Hampers & Gifting"
+        },
+        {
+           code: "10105",
+           name: "Everyday Market"
+        }
+      ]
     },
     {
-        name: "🐶🐱 Pet",
-        subcategories: [
-            /*106*/ "Pet",
-            /*107*/ "Pet Specials",
-            /*108*/ "Cat & Kitten",
-            /*109*/ "Dog & Puppy",
-            /*110*/ "Birds, Fish & Small Pets",
-            /*111*/ "Everyday Market"
-        ]
+       name: "🐶🐱 Pet",
+       subcategories: [
+        {
+           code: "11106",
+           name: "Pet"
+        },
+        {
+           code: "11107",
+           name: "Pet Specials"
+        },
+        {
+           code: "11108",
+           name: "Cat & Kitten"
+        },
+        {
+           code: "11109",
+           name: "Dog & Puppy"
+        },
+        {
+           code: "11110",
+           name: "Birds, Fish & Small Pets"
+        },
+        {
+           code: "11111",
+           name: "Everyday Market"
+        }
+      ]
     },
     {
-        name: "🧼🧽 Cleaning",
-        subcategories: [
-            /*112*/ "Cleaning",
-            /*113*/ "Cleaning Specials",
-            /*114*/ "Laundry",
-            /*115*/ "Kitchen",
-            /*116*/ "Toilet Paper, Tissues & Paper Towels",
-            /*117*/ "Cleaning Goods",
-            /*118*/ "Pest Control",
-            /*119*/ "Garden & Outdoors",
-            /*120*/ "Hardware",
-            /*121*/ "Bathroom",
-            /*122*/ "Homewares",
-            /*123*/ "Electronics",
-            /*124*/ "Sport & Fitness"
-        ]
+       name: "🧼🧽 Cleaning",
+       subcategories: [
+        {
+           code: "12112",
+           name: "Cleaning"
+        },
+        {
+           code: "12113",
+           name: "Cleaning Specials"
+        },
+        {
+           code: "12114",
+           name: "Laundry"
+        },
+        {
+           code: "12115",
+           name: "Kitchen"
+        },
+        {
+           code: "12116",
+           name: "Toilet Paper, Tissues & Paper Towels"
+        },
+        {
+           code: "12117",
+           name: "Cleaning Goods"
+        },
+        {
+           code: "12118",
+           name: "Pest Control"
+        },
+        {
+           code: "12119",
+           name: "Garden & Outdoors"
+        },
+        {
+           code: "12120",
+           name: "Hardware"
+        },
+        {
+           code: "12121",
+           name: "Bathroom"
+        },
+        {
+           code: "12122",
+           name: "Homewares"
+        },
+        {
+           code: "12123",
+           name: "Electronics"
+        },
+        {
+           code: "12124",
+           name: "Sport & Fitness"
+        }
+      ]
     },
     {
-        name: "🏠🛋️ Home & Lifestyle",
-        subcategories: [
-            /*125*/ "Home & Lifestyle",
-            /*126*/ "Home & Lifestyle Specials",
-            /*127*/ "Dining & Entertaining",
-            /*128*/ "Party Supplies",
-            /*129*/ "Kitchenware & Storage",
-            /*130*/ "Kitchen Appliances",
-            /*131*/ "Home Appliances",
-            /*132*/ "Home Decor & Furniture",
-            /*133*/ "Manchester & Bedding",
-            /*134*/ "Bathroom Towels & Accessories",
-            /*135*/ "Clothing & Accessories",
-            /*136*/ "Electronics",
-            /*137*/ "Stationery & Office Supplies",
-            /*138*/ "Toys & Games",
-            /*139*/ "Books & Magazines",
-            /*140*/ "Outdoor Living",
-            /*141*/ "Luggage & Travel",
-            /*142*/ "Sport, Fitness & Outdoor Activities",
-            /*143*/ "Everyday Market"
-        ]
+       name: "🏠🛋️ Home & Lifestyle",
+       subcategories: [
+        {
+           code: "13125",
+           name: "Home & Lifestyle"
+        },
+        {
+           code: "13126",
+           name: "Home & Lifestyle Specials"
+        },
+        {
+           code: "13127",
+           name: "Dining & Entertaining"
+        },
+        {
+           code: "13128",
+           name: "Party Supplies"
+        },
+        {
+           code: "13129",
+           name: "Kitchenware & Storage"
+        },
+        {
+           code: "13130",
+           name: "Kitchen Appliances"
+        },
+        {
+           code: "13131",
+           name: "Home Appliances"
+        },
+        {
+           code: "13132",
+           name: "Home Decor & Furniture"
+        },
+        {
+           code: "13133",
+           name: "Manchester & Bedding"
+        },
+        {
+           code: "13134",
+           name: "Bathroom Towels & Accessories"
+        },
+        {
+           code: "13135",
+           name: "Clothing & Accessories"
+        },
+        {
+           code: "13136",
+           name: "Electronics"
+        },
+        {
+           code: "13137",
+           name: "Stationery & Office Supplies"
+        },
+        {
+           code: "13138",
+           name: "Toys & Games"
+        },
+        {
+           code: "13139",
+           name: "Books & Magazines"
+        },
+        {
+           code: "13140",
+           name: "Outdoor Living"
+        },
+        {
+           code: "13141",
+           name: "Luggage & Travel"
+        },
+        {
+           code: "13142",
+           name: "Sport, Fitness & Outdoor Activities"
+        },
+        {
+           code: "13143",
+           name: "Everyday Market"
+        }
+      ]
     },
     {
-        name: "Unknown",
-        subcategories: [/*A0*/ "Unknown"],
-    },
-];
-
-exports.categories.forEach((category, index) => (category.index = index));
-
-exports.toCategoryCode = (i, j) => {
-    return (
-        (i < 10 ? "" + i : String.fromCharCode("A".charCodeAt(0) + (i - 10))) + (j < 10 ? "" + j : String.fromCharCode("A".charCodeAt(0) + (j - 10)))
-    );
-};
-
-exports.fromCategoryCode = (code) => {
-    if (!code || code.length != 2) return [exports.categories.length - 1, 0];
-    const codeI = code.charCodeAt(0);
-    const codeJ = code.charCodeAt(1);
-    return [
-        codeI - (codeI < "A".charCodeAt(0) ? "0".charCodeAt(0) : "A".charCodeAt(0) - 10),
-        codeJ - (codeJ < "A".charCodeAt(0) ? "0".charCodeAt(0) : "A".charCodeAt(0) - 10),
-    ];
-};
-
-exports.isValidCode = (code) => {
-    const [i, j] = exports.fromCategoryCode(code);
-    if (i < 0 || i >= exports.categories.length) return false;
-    const category = exports.categories[i];
-    if (j < 0 || j >= exports.categories.subcategories) return false;
-    return true;
-};
-
-exports.getCategory = (code) => {
-    const [i, j] = exports.fromCategoryCode(code);
-    return [exports.categories[i], exports.categories[i].subcategories[j]];
-};
-
-exports.UNKNOWN_CATEGORY = exports.toCategoryCode(exports.categories.length - 1, 0);
-
-if (require.main === module) {
-    const code = exports.toCategoryCode(10, 1);
-    console.log(code);
-    const [i, j] = exports.fromCategoryCode("A1");
-    console.log(i + ", " + j);
-    console.log(exports.isValidCode("F1"));
-    console.log(exports.isValidCode("11"));
-    console.log(exports.getCategory("A1"));
-}
+       name: "Unknown",
+       subcategories: [
+        "A0 Unknown"
+      ]
+    }
+  ];
+  
+  exports.categories.forEach((category, index) => (category.index = index));
+  
+  exports.toCategoryCode = (i, j) => {
+      return (
+          (i < 10 ? "" + i : String.fromCharCode("A".charCodeAt(0) + (i - 10))) +
+          (j < 10 ? "" + j : String.fromCharCode("A".charCodeAt(0) + (j - 10)))
+      );
+  };
+  
+  exports.fromCategoryCode = (code) => {
+      if (!code || code.length != 2) return [exports.categories.length - 1, 0];
+      const codeI = code.charCodeAt(0);
+      const codeJ = code.charCodeAt(1);
+      return [
+          codeI - (codeI < "A".charCodeAt(0) ? "0".charCodeAt(0) : "A".charCodeAt(0) - 10),
+          codeJ - (codeJ < "A".charCodeAt(0) ? "0".charCodeAt(0) : "A".charCodeAt(0) - 10),
+      ];
+  };
+  
+  exports.isValidCode = (code) => {
+      const [i, j] = exports.fromCategoryCode(code);
+      if (i < 0 || i >= exports.categories.length) return false;
+      const category = exports.categories[i];
+      if (j < 0 || j >= category.subcategories.length) return false;
+      return true;
+  };
+  
+  exports.getCategory = (code) => {
+      const [i, j] = exports.fromCategoryCode(code);
+      const category = exports.categories[i];
+      const subcategory = category.subcategories[j];
+      return [category, subcategory];
+  };
+  
+  exports.UNKNOWN_CATEGORY = exports.toCategoryCode(exports.categories.length - 1, 0);
+  
+  if (require.main === module) {
+      const code = exports.toCategoryCode(10, 1);
+      console.log(code); // Prints the category code for indices 10 and 1
+      const [i, j] = exports.fromCategoryCode("A1");
+      console.log(i + ", " + j); // Prints the decoded indices for category code "A1"
+      console.log(exports.isValidCode("F1")); // Checks if "F1" is a valid category code
+      console.log(exports.isValidCode("11")); // Checks if "11" is a valid category code
+      console.log(exports.getCategory("A1")); // Retrieves the category and subcategory for code "A1"
+  }
+  
