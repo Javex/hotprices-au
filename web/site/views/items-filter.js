@@ -307,23 +307,44 @@ class ItemsFilter extends View {
 
         if (this.model.numItemsBeforeCategories && this.model.numItemsBeforeCategories != filteredItems.length) queryChanged = true;
         this.model.numItemsBeforeCategories = filteredItems.length; // This is not entirely correct, but I'm too lazy...
+        
         const filteredCategories = {};
         filteredItems.forEach((item) => {
-            const category = categories[fromCategoryCode(item.category)[0]];
-            filteredCategories[category.index] = filteredCategories[category.index] ? filteredCategories[category.index] + 1 : 1;
+            const [categoryIndex, subcategoryIndex] = fromCategoryCode(item.category);
+            const category = categories[categoryIndex];
+            if (!filteredCategories[category.index]) {
+                filteredCategories[category.index] = {};
+            }
+            filteredCategories[category.index][subcategoryIndex] = (filteredCategories[category.index][subcategoryIndex] || 0) + 1;
         });
+        
         for (const category of categories) {
-            const checkbox = elements["category-" + category.index];
-            if (filteredCategories[category.index] > 0) {
-                if (queryChanged) checkbox.checked = false;
-                checkbox.label = `${category.name} (${filteredCategories[category.index]})`;
-                checkbox.classList.remove("hidden");
+            const categoryCheckbox = elements["category-" + category.index];
+            if (filteredCategories[category.index]) {
+                if (queryChanged) categoryCheckbox.checked = false;
+                categoryCheckbox.label = `${category.name} (${Object.values(filteredCategories[category.index]).reduce((a, b) => a + b, 0)})`;
+                categoryCheckbox.classList.remove("hidden");
+                // for (const subcategory of category.subcategories) {
+                //     const subcategoryCheckbox = elements["subcategory-" + subcategory.code];
+                //     if (filteredCategories[category.index][subcategory.index] > 0) {
+                //         if (queryChanged) subcategoryCheckbox.checked = false;
+                //         subcategoryCheckbox.label = `${subcategory.name} (${filteredCategories[category.index][subcategory.index]})`;
+                //         subcategoryCheckbox.classList.remove("hidden");
+                //     } else {
+                //         if (queryChanged) subcategoryCheckbox.checked = true;
+                //         subcategoryCheckbox.classList.add("hidden");
+                //     }
+                // }
             } else {
-                if (queryChanged) checkbox.checked = true;
-                checkbox.classList.add("hidden");
+                if (queryChanged) categoryCheckbox.checked = true;
+                categoryCheckbox.classList.add("hidden");
+                // for (const subcategory of category.subcategories) {
+                //     const subcategoryCheckbox = elements["subcategory-" + subcategory.code];
+                //     subcategoryCheckbox.classList.add("hidden");
+                // }
             }
         }
-
+        
         if (Object.keys(filteredCategories).length != 0) {
             let numEnabledCategories = 0;
             Object.keys(filteredCategories).forEach((categoryIndex) => {
@@ -333,11 +354,13 @@ class ItemsFilter extends View {
             });
             if (numEnabledCategories > 0) {
                 filteredItems = filteredItems.filter((item) => {
-                    const category = categories[fromCategoryCode(item.category)[0]];
-                    return elements["category-" + category.index].checked;
+                    const [categoryIndex, subcategoryIndex] = fromCategoryCode(item.category);
+                    // return elements["category-" + categoryIndex].checked && elements["subcategory-" + categories[categoryIndex].subcategories[subcategoryIndex].code].checked;
+                    return elements["category-" + categoryIndex].checked;
                 });
             }
         }
+        
 
         log(`ItemsFilter - Filtering ${this.model.items.length} took ${deltaTime(start).toFixed(4)} secs, ${filteredItems.length} results.`);
 
