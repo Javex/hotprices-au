@@ -324,24 +324,9 @@ class ItemsFilter extends View {
                 if (queryChanged) categoryCheckbox.checked = false;
                 categoryCheckbox.label = `${category.name} (${Object.values(filteredCategories[category.index]).reduce((a, b) => a + b, 0)})`;
                 categoryCheckbox.classList.remove("hidden");
-                // for (const subcategory of category.subcategories) {
-                //     const subcategoryCheckbox = elements["subcategory-" + subcategory.code];
-                //     if (filteredCategories[category.index][subcategory.index] > 0) {
-                //         if (queryChanged) subcategoryCheckbox.checked = false;
-                //         subcategoryCheckbox.label = `${subcategory.name} (${filteredCategories[category.index][subcategory.index]})`;
-                //         subcategoryCheckbox.classList.remove("hidden");
-                //     } else {
-                //         if (queryChanged) subcategoryCheckbox.checked = true;
-                //         subcategoryCheckbox.classList.add("hidden");
-                //     }
-                // }
             } else {
                 if (queryChanged) categoryCheckbox.checked = true;
                 categoryCheckbox.classList.add("hidden");
-                // for (const subcategory of category.subcategories) {
-                //     const subcategoryCheckbox = elements["subcategory-" + subcategory.code];
-                //     subcategoryCheckbox.classList.add("hidden");
-                // }
             }
         }
         
@@ -355,7 +340,6 @@ class ItemsFilter extends View {
             if (numEnabledCategories > 0) {
                 filteredItems = filteredItems.filter((item) => {
                     const [categoryIndex, subcategoryIndex] = fromCategoryCode(item.category);
-                    // return elements["category-" + categoryIndex].checked && elements["subcategory-" + categories[categoryIndex].subcategories[subcategoryIndex].code].checked;
                     return elements["category-" + categoryIndex].checked;
                 });
             }
