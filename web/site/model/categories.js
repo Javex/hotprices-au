@@ -648,7 +648,10 @@ exports.categories = [
    {
       name: "Unknown",
       subcategories: [
-         "A0 Unknown"
+        {
+          code: "-1",
+          name: "Unknown"
+        }
       ]
    }
 ];
