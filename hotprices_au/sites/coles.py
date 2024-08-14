@@ -21,7 +21,6 @@ class ColesScraper:
             'Origin': 'https://www.coles.com.au',
             'Referer': 'https://www.coles.com.au',
         }
-        self.session.verify = False
         self.start()
 
     def start(self):
