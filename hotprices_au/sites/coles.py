@@ -8,6 +8,10 @@ from bs4 import BeautifulSoup
 from .. import output, request, units
 import hotprices_au.categories
 
+# How many errors are acceptable for a category before failing?
+# This means it's okay if *some* categories don't return 100% of products
+ERROR_COUNT_MAX = 2
+
 
 class ColesScraper:
     def __init__(self, store_id, quick=False):
@@ -39,6 +43,7 @@ class ColesScraper:
             "page": 1,
         }
         product_count = 0
+        error_count = 0
         while True:
             print(f'Page {params["page"]}')
             response = self.session.get(
@@ -48,8 +53,12 @@ class ColesScraper:
             try:
                 response.raise_for_status()
             except requests.HTTPError:
+                error_count += 1
                 print(response.text)
-                raise
+                if error_count > ERROR_COUNT_MAX:
+                    raise
+                else:
+                    continue
             response_data = response.json()
             search_results = response_data["pageProps"]["searchResults"]
             for result in search_results["results"]:
