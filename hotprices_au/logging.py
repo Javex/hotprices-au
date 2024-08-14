@@ -1,3 +1,3 @@
 import logging
 
-logger = logging.getLogger('hotprices_au')
+logger = logging.getLogger("hotprices_au")

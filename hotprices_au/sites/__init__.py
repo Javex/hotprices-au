@@ -2,6 +2,6 @@ from . import coles, woolies
 
 
 sites = {
-    'coles': coles,
-    'woolies': woolies,
+    "coles": coles,
+    "woolies": woolies,
 }

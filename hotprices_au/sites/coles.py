@@ -10,52 +10,54 @@ import hotprices_au.categories
 
 
 class ColesScraper:
-
     def __init__(self, store_id, quick=False):
         self.quick = quick
         self.store_id = store_id
 
         self.session = request.get_base_session()
         self.session.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36',
-            'Origin': 'https://www.coles.com.au',
-            'Referer': 'https://www.coles.com.au',
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
+            "Origin": "https://www.coles.com.au",
+            "Referer": "https://www.coles.com.au",
         }
         self.start()
 
     def start(self):
         # Need to get the subscription key
-        response = self.session.get('https://www.coles.com.au')
+        response = self.session.get("https://www.coles.com.au")
         response.raise_for_status()
         html = BeautifulSoup(response.text, features="html.parser")
         next_data_script = html.find("script", id="__NEXT_DATA__")
         next_data_json = json.loads(next_data_script.string)
-        self.api_key = next_data_json['runtimeConfig']['BFF_API_SUBSCRIPTION_KEY']
-        self.session.headers['ocp-apim-subscription-key'] = self.api_key
-        self.version = next_data_json['buildId']
+        self.api_key = next_data_json["runtimeConfig"]["BFF_API_SUBSCRIPTION_KEY"]
+        self.session.headers["ocp-apim-subscription-key"] = self.api_key
+        self.version = next_data_json["buildId"]
 
     def get_category(self, cat_slug):
         params = {
-            'slug': cat_slug,
-            'page': 1,
+            "slug": cat_slug,
+            "page": 1,
         }
         product_count = 0
         while True:
             print(f'Page {params["page"]}')
-            response = self.session.get(f'https://www.coles.com.au/_next/data/{self.version}/en/browse/{cat_slug}.json', params=params)
+            response = self.session.get(
+                f"https://www.coles.com.au/_next/data/{self.version}/en/browse/{cat_slug}.json",
+                params=params,
+            )
             try:
                 response.raise_for_status()
             except requests.HTTPError:
                 print(response.text)
                 raise
             response_data = response.json()
-            search_results = response_data['pageProps']['searchResults']
-            for result in search_results['results']:
+            search_results = response_data["pageProps"]["searchResults"]
+            for result in search_results["results"]:
                 yield result
 
             # Next page calculation
-            total_products = search_results['noOfResults']
-            product_count += len(search_results['results'])
+            total_products = search_results["noOfResults"]
+            product_count += len(search_results["results"])
             if product_count >= total_products:
                 # We're done
                 break
@@ -65,59 +67,66 @@ class ColesScraper:
                 break
 
             # Not done, go to next page
-            params['page'] += 1
+            params["page"] += 1
 
     def get_categories(self):
-        response = self.session.get(f'https://www.coles.com.au/api/bff/products/categories?storeId={self.store_id}')
+        response = self.session.get(
+            f"https://www.coles.com.au/api/bff/products/categories?storeId={self.store_id}"
+        )
         response.raise_for_status()
         category_data = response.json()
         categories = []
-        for category_obj in category_data['catalogGroupView']:
-            cat_slug = category_obj['seoToken']
+        for category_obj in category_data["catalogGroupView"]:
+            cat_slug = category_obj["seoToken"]
 
-            if cat_slug in ['down-down', 'back-to-school']:
+            if cat_slug in ["down-down", "back-to-school"]:
                 # Skip for now, expect duplicate products
                 continue
 
             categories.append(category_obj)
         return categories
 
+
 def get_canonical(item, today):
     ad_types = [
-        'SINGLE_TILE',
-        'CONTENT_ASSOCIATION',
+        "SINGLE_TILE",
+        "CONTENT_ASSOCIATION",
     ]
-    if item['_type'] in ad_types and item.get('adId'):
+    if item["_type"] in ad_types and item.get("adId"):
         # Ad tile, not a product
         return None
 
-    if item['pricing'] is None:
+    if item["pricing"] is None:
         # No pricing information, can't process
         return None
 
-    match item['description']:
-        case 'MINI CHRISTMAS CARD 20PK': item['size'] = '20pk'
-        case 'BOTTLE GIFT BAG': item['size'] = '1ea'
+    match item["description"]:
+        case "MINI CHRISTMAS CARD 20PK":
+            item["size"] = "20pk"
+        case "BOTTLE GIFT BAG":
+            item["size"] = "1ea"
 
     quantity, unit = get_quantity_and_unit(item)
 
-    name = item['name']
-    brand = item['brand']
+    name = item["name"]
+    brand = item["brand"]
     if brand:
         name = f"{brand} {name}"
     result = {
-        'id': item['id'],
-        'name': name,
-        'description': item['description'],
-        'price': item['pricing']['now'],
-        'priceHistory': [{
-            'date': today,
-            'price': item['pricing']['now'],
-        }],
-        'isWeighted': item['pricing']['unit'].get('isWeighted', False),
-        'unit': unit,
-        'quantity': quantity,
-        # 'organic': 
+        "id": item["id"],
+        "name": name,
+        "description": item["description"],
+        "price": item["pricing"]["now"],
+        "priceHistory": [
+            {
+                "date": today,
+                "price": item["pricing"]["now"],
+            }
+        ],
+        "isWeighted": item["pricing"]["unit"].get("isWeighted", False),
+        "unit": unit,
+        "quantity": quantity,
+        # 'organic':
     }
     result = units.convert_unit(result)
     return result
@@ -125,26 +134,28 @@ def get_canonical(item, today):
 
 def get_quantity_and_unit(item):
     # Try to parse size information first, it looks better in the frontend
-    size = item['size']
+    size = item["size"]
     if not size:
         # Maybe the description can be parsed as size
-        size = item['description']
+        size = item["description"]
 
-    unit_data = item['pricing']['unit']
-    quantity = unit_data['quantity']
+    unit_data = item["pricing"]["unit"]
+    quantity = unit_data["quantity"]
     try:
         parsed_quantity, unit = parse_str_unit(size)
         # A quantity of 0 or 1 indicates that the information is elsewhere
         if parsed_quantity != quantity and quantity > 1:
-            raise RuntimeError(f"Quantity '{quantity} does not matched parsed quantity '{parsed_quantity}")
+            raise RuntimeError(
+                f"Quantity '{quantity} does not matched parsed quantity '{parsed_quantity}"
+            )
         # If quantity is 1 and we parsed a different value then that's the right value
         # (e.g. 1 (quantity) packet of 38g (parsed_quantity))
         quantity = parsed_quantity
     except RuntimeError:
         # If that didn't work we can now try to get the info from standard sizes (e.g. per 100g)
-        if 'ofMeasureUnits' in unit_data:
-            unit = unit_data['ofMeasureUnits']
-        elif item.get('pricing',{}).get('comparable'):
+        if "ofMeasureUnits" in unit_data:
+            unit = unit_data["ofMeasureUnits"]
+        elif item.get("pricing", {}).get("comparable"):
             return parse_comparable(item)
         else:
             raise
@@ -153,44 +164,52 @@ def get_quantity_and_unit(item):
 
 
 def parse_comparable(item):
-    comparable = item['pricing']['comparable']
-    m = re.match(r'\$([\.0-9]+) per (.*)', comparable)
+    comparable = item["pricing"]["comparable"]
+    m = re.match(r"\$([\.0-9]+) per (.*)", comparable)
     if not m:
         raise RuntimeError(f"Unable to parse comparable {comparable}")
 
     price_str, per_str = m.group(1), m.group(2)
     price_per = float(price_str)
-    if price_per != item['pricing']['now']:
+    if price_per != item["pricing"]["now"]:
         raise RuntimeError(
             f"Price from {comparable} extracted as {price_per} "
             f"does not match expected price of {item['pricing']['now']}"
         )
 
-    if per_str == '1ea':
-        quantity, unit = 1, 'ea'
+    if per_str == "1ea":
+        quantity, unit = 1, "ea"
     else:
         raise RuntimeError(
-            f"Unable to understad what {per_str} means from "
-            f"{comparable}"
+            f"Unable to understad what {per_str} means from " f"{comparable}"
         )
     return quantity, unit
+
 
 def parse_str_unit(size):
     # Try coles-special methods before going to the generic function
     size = size.lower()
     matches = [
-        re.match(r'^.* (?P<quantity>[0-9]+)(?P<unit>[a-z]+):(pack(?P<count>[0-9]+)|(?P<each>ea))', size),
-        re.match(r'^.* (?P<count>[0-9]+)pk can (?P<quantity>[0-9]+)(?P<unit>[a-z]+)', size),
+        re.match(
+            r"^.* (?P<quantity>[0-9]+)(?P<unit>[a-z]+):(pack(?P<count>[0-9]+)|(?P<each>ea))",
+            size,
+        ),
+        re.match(
+            r"^.* (?P<count>[0-9]+)pk can (?P<quantity>[0-9]+)(?P<unit>[a-z]+)", size
+        ),
         # re.match(r'^.* (?P<quantity>[0-9]+)(?P<unit>[a-z]+) \(?(?P<count>[0-9]+)pk\)?', size),
-        re.match(r'^.* (?P<quantity>[0-9]+)(?P<unit>[a-z]+) \(?(?P<count>[0-9]+)pk\)?(:ctn)?(?P<ctn_count>[0-9]+)?', size),
+        re.match(
+            r"^.* (?P<quantity>[0-9]+)(?P<unit>[a-z]+) \(?(?P<count>[0-9]+)pk\)?(:ctn)?(?P<ctn_count>[0-9]+)?",
+            size,
+        ),
     ]
     for matched in matches:
         if matched:
-            quantity = float(matched.group('quantity'))
-            unit = matched.group('unit')
-            count_match = matched.group('count')
+            quantity = float(matched.group("quantity"))
+            unit = matched.group("unit")
+            count_match = matched.group("count")
             try:
-                ctn_count_match = matched.group('ctn_count')
+                ctn_count_match = matched.group("ctn_count")
             except IndexError:
                 ctn_count_match = False
             if ctn_count_match:
@@ -198,7 +217,7 @@ def parse_str_unit(size):
             elif count_match:
                 count = float(count_match)
             else:
-                each_str = matched.group('each')
+                each_str = matched.group("each")
                 if each_str:
                     count = 1
                 else:
@@ -210,65 +229,67 @@ def parse_str_unit(size):
 
 
 def main(quick, save_path):
-    coles = ColesScraper(store_id='0584', quick=quick)
+    coles = ColesScraper(store_id="0584", quick=quick)
     categories = coles.get_categories()
-    #categories = load_cache()
+    # categories = load_cache()
     for category_obj in categories:
-        cat_slug = category_obj['seoToken']
-        cat_desc = category_obj['name']
-        print(f'Fetching category {cat_slug} ({cat_desc})')
+        cat_slug = category_obj["seoToken"]
+        cat_desc = category_obj["name"]
+        print(f"Fetching category {cat_slug} ({cat_desc})")
         category = coles.get_category(cat_slug)
         all_category_bundles = list(category)
-        category_obj['Products'] = all_category_bundles
+        category_obj["Products"] = all_category_bundles
 
         if quick:
             break
-        #save_cache(categories)
+        # save_cache(categories)
     output.save_data(categories, save_path)
     get_category_mapping(categories)
-    #print(json.dumps(category, indent=4))
+    # print(json.dumps(category, indent=4))
 
 
 def get_category_mapping(raw_categories):
     "Take raw coles categories and turn them into standard format"
     categories = []
     for main_category in raw_categories:
-        main_cat_seo = main_category['seoToken']
-        main_cat_name = main_category['name']
+        main_cat_seo = main_category["seoToken"]
+        main_cat_name = main_category["name"]
         # Create entry for main category for products that aren't in any sub category
-        categories.append({
-            'id': main_category['id'],
-            'description': main_cat_name,
-            'url': f'https://www.coles.com.au/browse/{main_cat_seo}',
-            'code': None,
-        })
+        categories.append(
+            {
+                "id": main_category["id"],
+                "description": main_cat_name,
+                "url": f"https://www.coles.com.au/browse/{main_cat_seo}",
+                "code": None,
+            }
+        )
 
-        sub_categories = main_category.get('catalogGroupView', [])
+        sub_categories = main_category.get("catalogGroupView", [])
         if not sub_categories:
             raise RuntimeError("No subcats")
         for sub_category in sub_categories:
-            sub_cat_seo = sub_category['seoToken']
-            sub_cat_name = sub_category['name']
+            sub_cat_seo = sub_category["seoToken"]
+            sub_cat_name = sub_category["name"]
             sub_category_item = {
-                'id': sub_category['id'],
-                'description': f'{main_cat_name} > {sub_cat_name}',
-                'url': f'https://www.coles.com.au/browse/{main_cat_seo}/{sub_cat_seo}',
-                'code': None,
+                "id": sub_category["id"],
+                "description": f"{main_cat_name} > {sub_cat_name}",
+                "url": f"https://www.coles.com.au/browse/{main_cat_seo}/{sub_cat_seo}",
+                "code": None,
             }
             categories.append(sub_category_item)
 
-    categories = hotprices_au.categories.merge_save_save_categories('coles', categories)
+    categories = hotprices_au.categories.merge_save_save_categories("coles", categories)
 
-    category_map = {c['id']: c for c in categories}
+    category_map = {c["id"]: c for c in categories}
     return category_map
 
 
 def get_category_from_map(category_map, raw_item):
     # Confusingly "subCategoryId" is actually the parent category
     # and "categoryId" is the level 2 category
-    category_id = raw_item['onlineHeirs'][0]['categoryId']
-    return category_map[category_id]['code']
+    category_id = raw_item["onlineHeirs"][0]["categoryId"]
+    return category_map[category_id]["code"]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

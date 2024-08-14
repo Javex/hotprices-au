@@ -9,7 +9,7 @@ def get_base_session():
         total=10,
         backoff_factor=1,
         status_forcelist=[403, 503],
-        allowed_methods=['GET', 'POST'],
+        allowed_methods=["GET", "POST"],
     )
-    session.mount('https://', HTTPAdapter(max_retries=retry))
+    session.mount("https://", HTTPAdapter(max_retries=retry))
     return session
