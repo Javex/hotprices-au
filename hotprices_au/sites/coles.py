@@ -58,6 +58,7 @@ class ColesScraper:
                 if error_count > ERROR_COUNT_MAX:
                     raise
                 else:
+                    params["page"] += 1
                     continue
             response_data = response.json()
             search_results = response_data["pageProps"]["searchResults"]
