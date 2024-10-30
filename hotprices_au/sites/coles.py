@@ -245,7 +245,7 @@ def parse_str_unit(size):
         return units.parse_str_unit(size)
 
 
-def main(quick, save_path, category, page: int):
+def main(quick, save_path, category: str, page: int):
     """
     category: Slug or name or category to fetch, will fetch only that one.
     page: Page number to fetch.
@@ -253,7 +253,7 @@ def main(quick, save_path, category, page: int):
     coles = ColesScraper(store_id="0584", quick=quick)
     categories = coles.get_categories()
     # Rename to avoid the overwrite below
-    category_filter = category.lower()
+    category_filter = category.lower() if category is not None else None
     # categories = load_cache()
     for category_obj in categories:
         cat_slug = category_obj["seoToken"]
