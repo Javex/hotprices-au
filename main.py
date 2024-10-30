@@ -15,7 +15,7 @@ def main_sync(args):
             f"requested to skip if output file exists."
         )
     else:
-        sites.sites[args.store].main(args.quick, save_path)
+        sites.sites[args.store].main(args.quick, save_path, args.category, args.page)
 
 
 def main_analysis(args):
@@ -52,6 +52,12 @@ def main():
         help="Print relative path where file will be stored, then exit",
     )
     sync_parser.add_argument("--skip-existing", action="store_true", default=False)
+    sync_parser.add_argument("--category", help="Fetch a particular category only.")
+    sync_parser.add_argument(
+        "--page",
+        help="Only fetch one particular page. Useful when also using the --category option.",
+        type=int,
+    )
     sync_parser.add_argument("store", choices=list(sites.sites))
     sync_parser.set_defaults(func=main_sync)
 

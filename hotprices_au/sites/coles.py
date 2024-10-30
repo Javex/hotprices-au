@@ -37,7 +37,7 @@ class ColesScraper:
         self.session.headers["ocp-apim-subscription-key"] = self.api_key
         self.version = next_data_json["buildId"]
 
-    def get_category(self, cat_slug):
+    def get_category(self, cat_slug, page_filter: int):
         params = {
             "slug": cat_slug,
             "page": 1,
@@ -45,6 +45,11 @@ class ColesScraper:
         product_count = 0
         error_count = 0
         while True:
+            # If there's a filter and we're not on the right page then skip
+            if page_filter != None and params["page"] != page_filter:
+                params["page"] += 1
+                continue
+
             print(f'Page {params["page"]}')
             response = self.session.get(
                 f"https://www.coles.com.au/_next/data/{self.version}/en/browse/{cat_slug}.json",
@@ -54,8 +59,10 @@ class ColesScraper:
                 response.raise_for_status()
             except requests.HTTPError:
                 error_count += 1
-                print(response.text)
-                if error_count > ERROR_COUNT_MAX:
+                print(f'Error fetching page {params["page"]}')
+                # Need to also raise an error if there's a page filter as there
+                # are no more pages to try
+                if error_count > ERROR_COUNT_MAX or page_filter is not None:
                     raise
                 else:
                     params["page"] += 1
@@ -238,15 +245,25 @@ def parse_str_unit(size):
         return units.parse_str_unit(size)
 
 
-def main(quick, save_path):
+def main(quick, save_path, category, page: int):
+    """
+    category: Slug or name or category to fetch, will fetch only that one.
+    page: Page number to fetch.
+    """
     coles = ColesScraper(store_id="0584", quick=quick)
     categories = coles.get_categories()
+    # Rename to avoid the overwrite below
+    category_filter = category.lower()
     # categories = load_cache()
     for category_obj in categories:
         cat_slug = category_obj["seoToken"]
         cat_desc = category_obj["name"]
+        if category_filter is not None and (
+            category_filter != cat_desc.lower() or category_filter != cat_slug.lower()
+        ):
+            continue
         print(f"Fetching category {cat_slug} ({cat_desc})")
-        category = coles.get_category(cat_slug)
+        category = coles.get_category(cat_slug, page_filter=page)
         all_category_bundles = list(category)
         category_obj["Products"] = all_category_bundles
 

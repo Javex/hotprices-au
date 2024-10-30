@@ -197,7 +197,9 @@ def get_canonical(item, today):
     return result
 
 
-def main(quick, save_path):
+def main(quick, save_path, category_filter: str, page_filter: int):
+    if category_filter is not None or page_filter is not None:
+        raise NotImplementedError("Filters not implemented for woolies yet.")
     woolies = WooliesAPI(quick=quick)
     categories = woolies.get_categories()
     # categories = load_cache()
