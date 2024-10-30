@@ -10,7 +10,7 @@ import hotprices_au.categories
 
 # How many errors are acceptable for a category before failing?
 # This means it's okay if *some* categories don't return 100% of products
-ERROR_COUNT_MAX = 2
+ERROR_COUNT_MAX = 9
 
 
 class ColesScraper:
