@@ -27,6 +27,7 @@ def get_canoncial_for(store, raw_items, category_map, today):
             # pprint.pprint(raw_item)
             # Skip parsing errors and move on to next item
             # raise
+            continue
         if canonical_item is None:
             continue
         canonical_item["store"] = store
