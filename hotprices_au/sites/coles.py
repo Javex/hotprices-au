@@ -11,6 +11,7 @@ import hotprices_au.categories
 # How many errors are acceptable for a category before failing?
 # This means it's okay if *some* categories don't return 100% of products
 ERROR_COUNT_MAX = 9
+ERROR_IGNORE = True
 
 
 class ColesScraper:
@@ -60,10 +61,11 @@ class ColesScraper:
             except requests.HTTPError:
                 error_count += 1
                 print(f'Error fetching page {params["page"]}')
-                # Need to also raise an error if there's a page filter as there
-                # are no more pages to try
-                if error_count > ERROR_COUNT_MAX or page_filter is not None:
-                    raise
+                if not ERROR_IGNORE:
+                    # Need to also raise an error if there's a page filter as there
+                    # are no more pages to try
+                    if error_count > ERROR_COUNT_MAX or page_filter is not None:
+                        raise
                 else:
                     params["page"] += 1
                     continue
