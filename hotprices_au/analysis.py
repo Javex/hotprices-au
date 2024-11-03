@@ -7,14 +7,22 @@ from .logging import logger
 from . import output, sites
 
 
+# 1% error rate for parsing is fine
+ERROR_RATE_MAX = 0.01
+
+
 def get_canoncial_for(store, raw_items, category_map, today):
     canonical_items = []
     store_module = sites.sites[store]
+    err_count = 0
+    total_parsed = 0
     for raw_item in raw_items:
+        total_parsed += 1
         try:
             canonical_item = store_module.get_canonical(raw_item, today)
         except Exception:
             logger.exception(f"Unable to process store '{store}' item: {raw_item}")
+            err_count += 1
             # import pprint
             # pprint.pprint(raw_item)
             # Skip parsing errors and move on to next item
@@ -29,6 +37,11 @@ def get_canoncial_for(store, raw_items, category_map, today):
         except KeyError:
             canonical_item["category"] = None
         canonical_items.append(canonical_item)
+    error_rate = float(err_count) / total_parsed
+    if error_rate > ERROR_RATE_MAX:
+        raise RuntimeError(
+            f"Error rate of {error_rate} greater than max error rate of {ERROR_RATE_MAX}. Total errors: {err_count}, total parsed: {total_parsed}"
+        )
     return canonical_items
 
 
