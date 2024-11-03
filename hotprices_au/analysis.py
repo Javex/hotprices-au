@@ -38,11 +38,12 @@ def get_canoncial_for(store, raw_items, category_map, today):
         except KeyError:
             canonical_item["category"] = None
         canonical_items.append(canonical_item)
-    error_rate = float(err_count) / total_parsed
-    if error_rate > ERROR_RATE_MAX:
-        raise RuntimeError(
-            f"Error rate of {error_rate} greater than max error rate of {ERROR_RATE_MAX}. Total errors: {err_count}, total parsed: {total_parsed}"
-        )
+    if total_parsed != 0:
+        error_rate = float(err_count) / total_parsed
+        if error_rate > ERROR_RATE_MAX:
+            raise RuntimeError(
+                f"Error rate of {error_rate} greater than max error rate of {ERROR_RATE_MAX}. Total errors: {err_count}, total parsed: {total_parsed}"
+            )
     return canonical_items
 
 
