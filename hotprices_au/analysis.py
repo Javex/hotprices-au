@@ -15,10 +15,10 @@ def get_canoncial_for(store, raw_items, category_map, today):
             canonical_item = store_module.get_canonical(raw_item, today)
         except Exception:
             logger.exception(f"Unable to process store '{store}' item: {raw_item}")
-            import pprint
-
-            pprint.pprint(raw_item)
-            raise
+            # import pprint
+            # pprint.pprint(raw_item)
+            # Skip parsing errors and move on to next item
+            # raise
         if canonical_item is None:
             continue
         canonical_item["store"] = store
