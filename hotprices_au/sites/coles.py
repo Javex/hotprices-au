@@ -21,7 +21,7 @@ class ColesScraper:
 
         self.session = request.get_base_session()
         self.session.headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
             "Origin": "https://www.coles.com.au",
             "Referer": "https://www.coles.com.au",
         }
