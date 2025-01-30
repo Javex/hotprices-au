@@ -28,6 +28,11 @@ jobs:
         with:
           name: coles_snapshot
           path: ./output/coles/
+      - users: actions/upload-artifact@v3
+        with:
+          name: coles_error
+          path: ./output/coles/
+        if: ${{ failure() }}
   merge-price-history:
     permissions:
       contents: read  # Required for checkout action
