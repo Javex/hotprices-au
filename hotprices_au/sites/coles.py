@@ -51,7 +51,7 @@ class ColesScraper:
                 params["page"] += 1
                 continue
 
-            print(f'Page {params["page"]}')
+            print(f"Page {params['page']}")
             response = self.session.get(
                 f"https://www.coles.com.au/_next/data/{self.version}/en/browse/{cat_slug}.json",
                 params=params,
@@ -60,7 +60,7 @@ class ColesScraper:
                 response.raise_for_status()
             except requests.HTTPError:
                 error_count += 1
-                print(f'Error fetching page {params["page"]}')
+                print(f"Error fetching page {params['page']}")
                 if not ERROR_IGNORE:
                     # Need to also raise an error if there's a page filter as there
                     # are no more pages to try
@@ -200,7 +200,7 @@ def parse_comparable(item):
         quantity, unit = 1, "ea"
     else:
         raise RuntimeError(
-            f"Unable to understad what {per_str} means from " f"{comparable}"
+            f"Unable to understad what {per_str} means from {comparable}"
         )
     return quantity, unit
 
