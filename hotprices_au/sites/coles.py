@@ -15,9 +15,10 @@ ERROR_IGNORE = True
 
 
 class ColesScraper:
-    def __init__(self, store_id, quick=False):
+    def __init__(self, store_id, save_path_dir: pathlib.Path, quick=False):
         self.quick = quick
         self.store_id = store_id
+        self.save_path_dir = save_path_dir
 
         self.session = request.get_base_session()
         self.session.headers = {
@@ -31,9 +32,13 @@ class ColesScraper:
         # Need to get the subscription key
         response = self.session.get("https://www.coles.com.au")
         response.raise_for_status()
-        html = BeautifulSoup(response.text, features="html.parser")
-        next_data_script = html.find("script", id="__NEXT_DATA__")
-        next_data_json = json.loads(next_data_script.string)
+        try:
+            html = BeautifulSoup(response.text, features="html.parser")
+            next_data_script = html.find("script", id="__NEXT_DATA__")
+            next_data_json = json.loads(next_data_script.string)
+        except:
+            output.save_response(response, self.save_path_dir)
+            raise
         self.api_key = next_data_json["runtimeConfig"]["BFF_API_SUBSCRIPTION_KEY"]
         self.session.headers["ocp-apim-subscription-key"] = self.api_key
         self.version = next_data_json["buildId"]
@@ -69,7 +74,12 @@ class ColesScraper:
                 else:
                     params["page"] += 1
                     continue
-            response_data = response.json()
+            try:
+                response_data = response.json()
+            except:
+                output.save_response(response, self.save_path_dir)
+                raise
+
             search_results = response_data["pageProps"]["searchResults"]
             for result in search_results["results"]:
                 yield result
@@ -247,12 +257,13 @@ def parse_str_unit(size):
         return units.parse_str_unit(size)
 
 
-def main(quick, save_path, category: str, page: int):
+def main(quick, save_path: pathlib.Path, category: str, page: int):
     """
     category: Slug or name or category to fetch, will fetch only that one.
     page: Page number to fetch.
     """
-    coles = ColesScraper(store_id="0584", quick=quick)
+    save_path_dir = save_path.parent
+    coles = ColesScraper(store_id="0584", save_path_dir=save_path_dir, quick=quick)
     categories = coles.get_categories()
     # Rename to avoid the overwrite below
     category_filter = category.lower() if category is not None else None

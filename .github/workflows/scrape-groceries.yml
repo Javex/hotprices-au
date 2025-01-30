@@ -57,6 +57,11 @@ jobs:
           mkdir -p ./output/
           aws s3 cp "s3://grocery-scrape-au/${save_path}" "./output/${save_path}" || true
       - run: python3 main.py sync coles --skip-existing
+      - users: actions/upload-artifact@v3
+        with:
+          name: coles_error
+          path: ./output/coles/
+        if: ${{ failure() }}
       - uses: actions/upload-artifact@v3
         with:
           name: coles_snapshot

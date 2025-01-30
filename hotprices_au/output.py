@@ -1,6 +1,8 @@
 import json
 import gzip
 from datetime import datetime
+import requests
+import pathlib
 
 
 def get_save_path(store, output_dir, compression="gzip", day=None):
@@ -39,3 +41,8 @@ def load_data(store, output_dir, compression="gzip", day=None):
 
     decoded_data = json.loads(raw_data)
     return decoded_data
+
+
+def save_response(response: requests.Response, save_path_dir: pathlib.Path):
+    fpath = save_path_dir.joinpath("response.txt")
+    fpath.write_text(response.text)
