@@ -2,6 +2,7 @@ import re
 import requests
 import json
 import pathlib
+import scrapling
 from datetime import datetime
 from bs4 import BeautifulSoup
 
@@ -26,21 +27,25 @@ class ColesScraper:
             "Origin": "https://www.coles.com.au",
             "Referer": "https://www.coles.com.au",
         }
+        self.fetcher = scrapling.StealthyFetcher()
+        self.extra_headers = {}
+
         self.start()
 
     def start(self):
         # Need to get the subscription key
-        response = self.session.get("https://www.coles.com.au")
-        response.raise_for_status()
+        response = self.fetcher.fetch("https://www.coles.com.au")
         try:
-            html = BeautifulSoup(response.text, features="html.parser")
-            next_data_script = html.find("script", id="__NEXT_DATA__")
-            next_data_json = json.loads(next_data_script.string)
+            next_data_script = response.find("script", id="__NEXT_DATA__")
+            next_data_json = json.loads(next_data_script.text)
         except:
-            output.save_response(response, self.save_path_dir)
+            output.save_response(response.prettify(), self.save_path_dir)
             raise
         self.api_key = next_data_json["runtimeConfig"]["BFF_API_SUBSCRIPTION_KEY"]
         self.session.headers["ocp-apim-subscription-key"] = self.api_key
+        self.session.cookies = requests.utils.add_dict_to_cookiejar(
+            self.session.cookies, response.cookies
+        )
         self.version = next_data_json["buildId"]
 
     def get_category(self, cat_slug, page_filter: int):
@@ -77,7 +82,7 @@ class ColesScraper:
             try:
                 response_data = response.json()
             except:
-                output.save_response(response, self.save_path_dir)
+                output.save_response(response.text, self.save_path_dir)
                 raise
 
             search_results = response_data["pageProps"]["searchResults"]

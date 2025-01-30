@@ -43,6 +43,6 @@ def load_data(store, output_dir, compression="gzip", day=None):
     return decoded_data
 
 
-def save_response(response: requests.Response, save_path_dir: pathlib.Path):
-    fpath = save_path_dir.joinpath("response.txt")
-    fpath.write_text(response.text)
+def save_response(response: str, save_path_dir: pathlib.Path):
+    fpath = save_path_dir.joinpath("response.html")
+    fpath.write_text(response)
