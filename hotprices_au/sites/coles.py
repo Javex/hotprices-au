@@ -1,10 +1,11 @@
 import re
-import requests
+from typing import Any
 import json
 import pathlib
-import scrapling
-from datetime import datetime
+import bs4
+import camoufox
 from bs4 import BeautifulSoup
+from playwright.sync_api import BrowserContext
 
 from .. import output, request, units
 import hotprices_au.categories
@@ -27,62 +28,122 @@ class ColesScraper:
             "Origin": "https://www.coles.com.au",
             "Referer": "https://www.coles.com.au",
         }
-        self.fetcher = scrapling.StealthyFetcher()
         self.extra_headers = {}
+        self.fox: camoufox.Camoufox = camoufox.Camoufox(
+            headless=True,
+            enable_cache=True,
+            humanize=True,
+        )
 
+    def __enter__(self):
+        self.fox.__enter__()
+        self._setup()
+
+    def _setup(self):
+        if self.fox.browser is None:
+            raise RuntimeError("Unexpected None browser in camoufox instance")
+        if isinstance(self.fox.browser, BrowserContext):
+            raise RuntimeError("Unexpected type BrowserContext: %s", self.fox.browser)
+        self.context = self.fox.browser.new_context()
+        self.page = self.context.new_page()
+        self.api = self.context.request
+        self.context.tracing.start(
+            screenshots=True,
+            snapshots=True,
+            sources=True,
+        )
+
+    def reset(self):
+        self.page.close()
+        self.context.close()
+        self.fox.__exit__()
+
+        self.fox: camoufox.Camoufox = camoufox.Camoufox(
+            headless=True,
+            enable_cache=True,
+            humanize=True,
+        )
+        self.fox.__enter__()
+        self._setup()
         self.start()
+
+    def __exit__(self, *args: Any):
+        self.page.context.tracing.stop(path="trace.zip")
+        self.fox.__exit__(*args)
 
     def start(self):
         # Need to get the subscription key
-        response = self.fetcher.fetch("https://www.coles.com.au")
+        response = self.page.goto(
+            "https://www.coles.com.au", wait_until="domcontentloaded"
+        )
+        if response is None:
+            raise RuntimeError("Unexpected None response")
+        # Potentially there might be some redirects and bot protection before
+        # the real site is loaded. By waiting for the target element to appear,
+        # we can make sure we always end up in the correct place.
+        locator = self.page.locator("script#__NEXT_DATA__")
+        locator.wait_for(state="attached")
+        response_text = self.page.content()
         try:
-            next_data_script = response.find("script", id="__NEXT_DATA__")
-            next_data_json = json.loads(next_data_script.text)
+            html = BeautifulSoup(response_text, features="html.parser")
+            next_data_script = html.find("script", id="__NEXT_DATA__")
+            if next_data_script is None:
+                raise RuntimeError("Cannot find __NEXT_DATA__ script in response")
+            if not isinstance(next_data_script, bs4.Tag):
+                raise RuntimeError("Expected tag for script, got %s", next_data_script)
+            next_data_str = next_data_script.string
+            if next_data_str is None:
+                raise RuntimeError(
+                    "Unexpected None str for next_data_script: %s", next_data_script
+                )
+            next_data_json = json.loads(next_data_str)
         except:
-            output.save_response(response.prettify(), self.save_path_dir)
+            output.save_response(response.text(), self.save_path_dir)
             raise
         self.api_key = next_data_json["runtimeConfig"]["BFF_API_SUBSCRIPTION_KEY"]
-        self.session.headers["ocp-apim-subscription-key"] = self.api_key
-        self.session.cookies = requests.utils.add_dict_to_cookiejar(
-            self.session.cookies, response.cookies
-        )
+        self.extra_headers["ocp-apim-subscription-key"] = self.api_key
+        for cookie in self.page.context.cookies():
+            assert "name" in cookie
+            assert "value" in cookie
+            self.session.cookies.set(cookie["name"], cookie["value"])
         self.version = next_data_json["buildId"]
 
     def get_category(self, cat_slug, page_filter: int):
-        params = {
-            "slug": cat_slug,
-            "page": 1,
-        }
         product_count = 0
         error_count = 0
+        page = 1
         while True:
             # If there's a filter and we're not on the right page then skip
-            if page_filter != None and params["page"] != page_filter:
-                params["page"] += 1
+            if page_filter != None and page != page_filter:
+                page += 1
                 continue
 
-            print(f"Page {params['page']}")
-            response = self.session.get(
-                f"https://www.coles.com.au/_next/data/{self.version}/en/browse/{cat_slug}.json",
-                params=params,
-            )
-            try:
-                response.raise_for_status()
-            except requests.HTTPError:
+            response = self.get_category_page(cat_slug, page)
+            if response.headers.get("content-type", "").lower() == "text/html":
+                print("Encountered bot protection, resetting")
+                # Bot protection kicked in, do a reset
+                self.reset()
+                # Try once more
+                response = self.get_category_page(cat_slug, page)
+
+            if response is None:
+                raise RuntimeError("Unexpected None response")
+            if not response.ok:
                 error_count += 1
-                print(f"Error fetching page {params['page']}")
+                print(f"Error fetching page {page}")
                 if not ERROR_IGNORE:
                     # Need to also raise an error if there's a page filter as there
                     # are no more pages to try
                     if error_count > ERROR_COUNT_MAX or page_filter is not None:
                         raise
                 else:
-                    params["page"] += 1
+                    page += 1
                     continue
+            response_text = response.text()
             try:
-                response_data = response.json()
+                response_data = json.loads(response_text)
             except:
-                output.save_response(response.text, self.save_path_dir)
+                output.save_response(response_text, self.save_path_dir)
                 raise
 
             search_results = response_data["pageProps"]["searchResults"]
@@ -101,13 +162,32 @@ class ColesScraper:
                 break
 
             # Not done, go to next page
-            params["page"] += 1
+            page += 1
+
+    def get_category_page(self, cat_slug, page: int):
+        params = {
+            "slug": cat_slug,
+            "page": page,
+        }
+        print(f"Page {page}")
+        query = "&".join(f"{key}={value}" for key, value in params.items())
+        response = self.api.get(
+            f"https://www.coles.com.au/_next/data/{self.version}/en/browse/{cat_slug}.json?{query}",
+            headers=self.extra_headers,
+        )
+        return response
 
     def get_categories(self):
-        response = self.session.get(
-            f"https://www.coles.com.au/api/bff/products/categories?storeId={self.store_id}"
+        response = self.api.get(
+            f"https://www.coles.com.au/api/bff/products/categories?storeId={self.store_id}",
+            headers=self.extra_headers,
         )
-        response.raise_for_status()
+        if response is None:
+            raise RuntimeError("Unexpected None response")
+        if not response.ok:
+            raise RuntimeError(
+                "Unexpected status code in response: %s", response.status
+            )
         category_data = response.json()
         categories = []
         for category_obj in category_data["catalogGroupView"]:
@@ -269,25 +349,28 @@ def main(quick, save_path: pathlib.Path, category: str, page: int):
     """
     save_path_dir = save_path.parent
     coles = ColesScraper(store_id="0584", save_path_dir=save_path_dir, quick=quick)
-    categories = coles.get_categories()
-    # Rename to avoid the overwrite below
-    category_filter = category.lower() if category is not None else None
-    # categories = load_cache()
-    for category_obj in categories:
-        cat_slug = category_obj["seoToken"]
-        cat_desc = category_obj["name"]
-        if category_filter is not None and (
-            category_filter != cat_desc.lower() or category_filter != cat_slug.lower()
-        ):
-            continue
-        print(f"Fetching category {cat_slug} ({cat_desc})")
-        category = coles.get_category(cat_slug, page_filter=page)
-        all_category_bundles = list(category)
-        category_obj["Products"] = all_category_bundles
+    with coles:
+        coles.start()
+        categories = coles.get_categories()
+        # Rename to avoid the overwrite below
+        category_filter = category.lower() if category is not None else None
+        # categories = load_cache()
+        for category_obj in categories:
+            cat_slug = category_obj["seoToken"]
+            cat_desc = category_obj["name"]
+            if category_filter is not None and (
+                category_filter != cat_desc.lower()
+                or category_filter != cat_slug.lower()
+            ):
+                continue
+            print(f"Fetching category {cat_slug} ({cat_desc})")
+            category = coles.get_category(cat_slug, page_filter=page)
+            all_category_bundles = list(category)
+            category_obj["Products"] = all_category_bundles
 
-        if quick:
-            break
-        # save_cache(categories)
+            if quick:
+                break
+            # save_cache(categories)
     output.save_data(categories, save_path)
     get_category_mapping(categories)
     # print(json.dumps(category, indent=4))
