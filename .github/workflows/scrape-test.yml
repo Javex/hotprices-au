@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: pip3 install -r requirements.txt
       - run: python3 main.py sync --quick woolies
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: woolies_snapshot
           path: ./output/woolies/
@@ -24,11 +24,11 @@ jobs:
       - uses: actions/checkout@v4
       - run: pip3 install -r requirements.txt
       - run: python3 main.py sync --quick coles
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: coles_snapshot
           path: ./output/coles/
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: coles_error
           path: ./output/coles/
@@ -44,12 +44,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Download coles artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: coles_snapshot
           path: ./output/coles/
       - name: Download woolies artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: woolies_snapshot
           path: ./output/woolies/
@@ -63,7 +63,7 @@ jobs:
       # is broken and needs to be built from scratch locally.
       - run: aws s3 cp s3://grocery-scrape-au/latest-canonical.json.gz ./output/
       - run: python3 main.py analysis
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: latest_canonical
           path: ./output/latest-canonical.json.gz
