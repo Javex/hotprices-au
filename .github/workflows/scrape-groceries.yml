@@ -21,6 +21,8 @@ jobs:
           aws-region: ap-southeast-2
         # it's okay to ignore the exit code on the last line, if the file doesn't exist then we scrape it
       - run: |
+          # Run command once to download model files and get a clean print
+          python3 main.py sync --print-save-path woolies
           save_path="$(python3 main.py sync --print-save-path woolies)"
           echo "Save path is ${save_path}"
           mkdir -p ./output/
@@ -52,6 +54,8 @@ jobs:
           aws-region: ap-southeast-2
         # it's okay to ignore the exit code on the last line, if the file doesn't exist then we scrape it
       - run: |
+          # Run command once to download model files and get a clean print
+          python3 main.py sync --print-save-path coles
           save_path="$(python3 main.py sync --print-save-path coles)"
           echo "Save path is ${save_path}"
           mkdir -p ./output/
