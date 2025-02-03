@@ -6,6 +6,7 @@ import bs4
 import camoufox
 from bs4 import BeautifulSoup
 from playwright.sync_api import BrowserContext
+from playwright._impl._errors import TimeoutError
 
 from .. import output, request, units
 import hotprices_au.categories
@@ -53,7 +54,12 @@ class ColesScraper:
             sources=True,
         )
 
-    def reset(self):
+    def reset(self, retries=0):
+        """
+        Reset the browser to bypass bot protection.
+
+        `retries` is used to count how many times it's been attempted. Used for recursion.
+        """
         self.page.close()
         self.context.close()
         self.fox.__exit__()
@@ -65,7 +71,14 @@ class ColesScraper:
         )
         self.fox.__enter__()
         self._setup()
-        self.start()
+        try:
+            self.start()
+        except TimeoutError:
+            if retries < 5:
+                print(f"Got TimeoutError, retrying. Retries so far: {retries}")
+                return self.reset(retries + 1)
+            else:
+                raise
 
     def __exit__(self, *args: Any):
         self.page.context.tracing.stop(path="trace.zip")
