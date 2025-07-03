@@ -7,8 +7,8 @@ from .logging import logger
 from . import output, sites
 
 
-# 1% error rate for parsing is fine
-ERROR_RATE_MAX = 0.01
+# 5% error rate for parsing is fine
+ERROR_RATE_MAX = 0.05
 
 
 def get_canoncial_for(store, raw_items, category_map, today):
