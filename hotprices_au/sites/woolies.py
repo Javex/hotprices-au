@@ -118,8 +118,17 @@ class WooliesAPI:
 
 
 def is_filtered_category(category_obj):
+    cat_id_skip = [
+        # Skip for now, expect duplicate products
+        "specialsgroup",
+        # These all have over 100,000 products!
+        "1_A363395",  # Everyday Market
+        "1_DEA3ED5",  # Home & Lifestyle
+        "1_B863F57",  # Electronics
+    ]
+
     cat_id = category_obj["NodeId"]
-    if cat_id == "specialsgroup":
+    if cat_id in cat_id_skip:
         # Skip for now, expect duplicate products
         return True
 
