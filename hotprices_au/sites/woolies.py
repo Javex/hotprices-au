@@ -10,7 +10,7 @@ from hotprices_au.logging import logger
 
 
 class WooliesAPI:
-    def __init__(self, quick=False, request_delay: float = 1.0):
+    def __init__(self, quick=False, request_delay: float = 0.3):
         self.quick = quick
         self.request_delay = request_delay
 
@@ -30,7 +30,7 @@ class WooliesAPI:
             response.raise_for_status()
             self._started = True
 
-    def get_category(self, cat_id):
+    def get_category(self, cat_id, cat_slug="", cat_name=""):
         raw_json = r"""
             {
                 "pageNumber": 1,
@@ -62,16 +62,20 @@ class WooliesAPI:
         """
         request_data = json.loads(raw_json)
         request_data["categoryId"] = cat_id
+        if cat_slug:
+            request_data["url"] = f"/shop/browse/{cat_slug}"
+            request_data["location"] = f"/shop/browse/{cat_slug}"
+        if cat_name:
+            import json as _json
+            request_data["formatObject"] = _json.dumps({"name": cat_name})
         # Larger page size leads to an error, have to make do with 36 items per
         # page
         request_data["pageSize"] = 36
-        product_count = 0
-        page_count = None
+        woolworths_count = 0
+        consecutive_empty = 0
+        CONSECUTIVE_EMPTY_MAX = 3
         while True:
-            if page_count is None:
-                print(f'Page {request_data["pageNumber"]}')
-            else:
-                print(f'Page {request_data["pageNumber"]}/{page_count}')
+            print(f'Page {request_data["pageNumber"]}')
             if self.request_delay > 0:
                 time.sleep(self.request_delay)
             response = self.session.post(
@@ -80,23 +84,37 @@ class WooliesAPI:
             )
             response.raise_for_status()
             response_data = response.json()
-            for bundle in response_data["Bundles"]:
+
+            all_bundles = response_data["Bundles"]
+            woolworths_bundles = [
+                bundle for bundle in all_bundles
+                if all(
+                    p.get("SoldBy", "Woolworths") == "Woolworths"
+                    for p in bundle.get("Products", [])
+                )
+            ]
+            for bundle in woolworths_bundles:
                 yield bundle
 
-            # Next page calculation
-            total_products = response_data["TotalRecordCount"]
+            woolworths_count += len(woolworths_bundles)
 
-            # Warn once if we expect more products that it can return
-            if total_products >= 10000 and page_count is None:
-                logger.warn(
-                    f"Category {cat_id} has too many products: {total_products}. Will only be able to fetch 10,000."
-                )
-
-            bundle_size = len(response_data["Bundles"])
-            product_count += bundle_size
-            if product_count >= total_products or bundle_size == 0:
-                # We're done
+            # If the API returns no bundles at all, we are done
+            if len(all_bundles) == 0:
                 break
+
+            # Track consecutive pages with no Woolworths products -- signals
+            # we have exhausted genuine stock and the rest is third-party
+            if len(woolworths_bundles) == 0:
+                consecutive_empty += 1
+                if consecutive_empty >= CONSECUTIVE_EMPTY_MAX:
+                    logger.info(
+                        f"Category {cat_id}: {CONSECUTIVE_EMPTY_MAX} consecutive pages "
+                        f"with no Woolworths products, stopping. "
+                        f"Total Woolworths products: {woolworths_count}"
+                    )
+                    break
+            else:
+                consecutive_empty = 0
 
             # Temporary speedup
             if self.quick:
@@ -104,7 +122,6 @@ class WooliesAPI:
 
             # Not done, go to next page
             request_data["pageNumber"] += 1
-            page_count = math.ceil(total_products / request_data["pageSize"])
 
     def get_categories(self):
         response = self.session.get(
@@ -122,27 +139,36 @@ class WooliesAPI:
 
 
 def is_filtered_category(category_obj):
+    # Node ID fallback for legacy entries - prefer slug-based matching below
     cat_id_skip = [
-        # Skip for now, expect duplicate products
         "specialsgroup",
-        # These all have over 100,000 products!
-        "1_A363395",  # Everyday Market
-        "1_DEA3ED5",  # Home & Lifestyle
-        "1_B863F57",  # Electronics
     ]
-    # Seasonal, promotional, or out-of-scope categories
-    cat_slug_skip = [
+
+    # Categories excluded by URL slug -- more robust than node IDs which can change
+    cat_slug_skip = {
+        "everyday-market",      # External marketplace, 100k+ products duplicated elsewhere
+        "home-lifestyle",       # Non-grocery, out of scope
+        "electronics",          # Non-grocery, out of scope
         "halloween",            # Seasonal promotional set
         "healthylife-pharmacy", # External partner, not standard Woolworths stock
         "beer-wine-spirits",    # Alcohol
-    ]
+        "sports-fitness-outdoor-activities",  # Non-grocery, out of scope
+        "cleaning-maintenance", # Dominated by third-party Everyday Market products
+        "health-wellness",      # Dominated by third-party Everyday Market products
+        "beauty-personal-care", # Dominated by third-party Everyday Market products
+        "baby",                 # Dominated by third-party Everyday Market products
+        "pet",                  # Dominated by third-party Everyday Market products
+        "personal-care",        # Dominated by third-party Everyday Market products
+        "beauty",               # Dominated by third-party Everyday Market products
+        "international-foods",  # 83% overlap with Pantry, only 37 unique products
+    }
+
     cat_slug = category_obj.get("UrlFriendlyName", "")
     if cat_slug in cat_slug_skip:
         return True
 
     cat_id = category_obj["NodeId"]
     if cat_id in cat_id_skip:
-        # Skip for now, expect duplicate products
         return True
 
     cat_desc = category_obj["Description"]
@@ -178,6 +204,10 @@ def get_canonical(item, today):
 
     # Skip online-only products (not available in physical stores)
     if item.get("IsOnlineOnly"):
+        return None
+
+    # Skip Everyday Market / third-party seller products
+    if item.get("SoldBy", "Woolworths") != "Woolworths":
         return None
 
     # Fix some particularly problematic products
@@ -223,17 +253,23 @@ def get_canonical(item, today):
     return result
 
 
-def main(quick, save_path, category_filter: str, page_filter: int, request_delay: float = 1.0):
-    if category_filter is not None or page_filter is not None:
-        raise NotImplementedError("Filters not implemented for woolies yet.")
+def main(quick, save_path, category_filter: str, page_filter: int, request_delay: float = 0.3):
+    if page_filter is not None:
+        raise NotImplementedError("Page filter not implemented for woolies yet.")
     woolies = WooliesAPI(quick=quick, request_delay=request_delay)
     categories = woolies.get_categories()
-    # categories = load_cache()
+    category_filter_lower = category_filter.lower() if category_filter is not None else None
     for category_obj in categories:
         cat_id = category_obj["NodeId"]
         cat_desc = category_obj["Description"]
+        cat_slug = category_obj.get("UrlFriendlyName", "")
+        if category_filter_lower is not None and (
+            category_filter_lower != cat_desc.lower()
+            and category_filter_lower != cat_slug.lower()
+        ):
+            continue
         print(f"Fetching category {cat_id} ({cat_desc})")
-        category = woolies.get_category(cat_id)
+        category = woolies.get_category(cat_id, cat_slug=cat_slug, cat_name=cat_desc)
         all_category_bundles = list(category)
         category_obj["Products"] = all_category_bundles
 
