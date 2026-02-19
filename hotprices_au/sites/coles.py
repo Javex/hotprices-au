@@ -1,4 +1,5 @@
 import re
+import time
 from typing import Any
 import json
 import pathlib
@@ -18,10 +19,15 @@ ERROR_IGNORE = True
 
 
 class ColesScraper:
-    def __init__(self, store_id, save_path_dir: pathlib.Path, quick=False):
+    def __init__(
+        self, store_id, save_path_dir: pathlib.Path, quick=False, headless=True, request_delay: float = 2.0
+    ):
         self.quick = quick
         self.store_id = store_id
         self.save_path_dir = save_path_dir
+        self.headless = headless
+        self.request_delay = request_delay
+        self.captured_api_key = None
 
         self.session = request.get_base_session()
         self.session.headers = {
@@ -31,7 +37,7 @@ class ColesScraper:
         }
         self.extra_headers = {}
         self.fox: camoufox.Camoufox = camoufox.Camoufox(
-            headless=True,
+            headless=self.headless,
             enable_cache=True,
             humanize=True,
         )
@@ -39,6 +45,7 @@ class ColesScraper:
     def __enter__(self):
         self.fox.__enter__()
         self._setup()
+        return self
 
     def _setup(self):
         if self.fox.browser is None:
@@ -53,6 +60,16 @@ class ColesScraper:
             snapshots=True,
             sources=True,
         )
+        self.page.on("request", self._capture_api_key)
+
+    def _capture_api_key(self, request):
+        """Intercept network requests to capture the API key from headers."""
+        url = request.url
+        if "coles.com.au/api/" in url or "coles.com.au/_next/data" in url:
+            headers = request.headers
+            for key_name in ["ocp-apim-subscription-key", "col-api-key", "x-api-key"]:
+                if key_name in headers:
+                    self.captured_api_key = headers[key_name]
 
     def reset(self, retries=0):
         """
@@ -65,7 +82,7 @@ class ColesScraper:
         self.fox.__exit__()
 
         self.fox: camoufox.Camoufox = camoufox.Camoufox(
-            headless=True,
+            headless=self.headless,
             enable_cache=True,
             humanize=True,
         )
@@ -85,17 +102,24 @@ class ColesScraper:
         self.fox.__exit__(*args)
 
     def start(self):
-        # Need to get the subscription key
         response = self.page.goto(
             "https://www.coles.com.au", wait_until="domcontentloaded"
         )
         if response is None:
             raise RuntimeError("Unexpected None response")
-        # Potentially there might be some redirects and bot protection before
-        # the real site is loaded. By waiting for the target element to appear,
-        # we can make sure we always end up in the correct place.
         locator = self.page.locator("script#__NEXT_DATA__")
         locator.wait_for(state="attached")
+
+        try:
+            browse_link = self.page.locator("a[href*='/browse/']").first
+            if browse_link:
+                browse_link.click()
+                self.page.wait_for_timeout(2000)
+                self.page.go_back()
+                self.page.wait_for_timeout(1000)
+        except Exception:
+            pass
+
         response_text = self.page.content()
         try:
             html = BeautifulSoup(response_text, features="html.parser")
@@ -113,7 +137,11 @@ class ColesScraper:
         except:
             output.save_response(response.text(), self.save_path_dir)
             raise
-        self.api_key = next_data_json["runtimeConfig"]["BFF_API_SUBSCRIPTION_KEY"]
+
+        if self.captured_api_key:
+            self.api_key = self.captured_api_key
+        else:
+            self.api_key = next_data_json["runtimeConfig"]["BFF_API_SUBSCRIPTION_KEY"]
         self.extra_headers["ocp-apim-subscription-key"] = self.api_key
         for cookie in self.page.context.cookies():
             assert "name" in cookie
@@ -182,6 +210,8 @@ class ColesScraper:
             "slug": cat_slug,
             "page": page,
         }
+        if self.request_delay > 0:
+            time.sleep(self.request_delay)
         print(f"Page {page}")
         query = "&".join(f"{key}={value}" for key, value in params.items())
         response = self.api.get(
@@ -191,26 +221,101 @@ class ColesScraper:
         return response
 
     def get_categories(self):
-        response = self.api.get(
-            f"https://www.coles.com.au/api/bff/products/categories?storeId={self.store_id}",
-            headers=self.extra_headers,
+        """Fetch categories via GraphQL API."""
+        query = """
+            query GetShopProductsMenu($storeId: BrandedId!, $withCampaignLinks: Boolean!, $campaignCount: Int) {
+                menuItems: productCategories(
+                    storeId: $storeId
+                    withCampaignLinks: $withCampaignLinks
+                    campaignCount: $campaignCount
+                ) {
+                    ...shopProductsMenuFields
+                }
+            }
+
+            fragment shopProductsMenuFields on ProductCategories {
+                restrictedIds: excludedCategoryIds
+                items: catalogGroupView {
+                    ...shopProductMenuItemFields
+                    childItems: catalogGroupView {
+                        ...shopProductMenuItemFields
+                        childItems: catalogGroupView {
+                            ...shopProductMenuItemFields
+                        }
+                    }
+                }
+            }
+
+            fragment shopProductMenuItemFields on ProductCategory {
+                ...catalogGroupFields
+                type
+            }
+
+            fragment catalogGroupFields on ProductCategory {
+                id
+                level
+                name
+                originalName
+                productCount
+                seoToken
+                type
+                subType
+            }
+        """
+        variables = {
+            "storeId": f"COL:{self.store_id}",
+            "withCampaignLinks": True,
+            "campaignCount": 0,
+        }
+
+        response = self.api.post(
+            "https://www.coles.com.au/api/graphql",
+            headers={
+                **self.extra_headers,
+                "Content-Type": "application/json",
+            },
+            data=json.dumps(
+                {
+                    "query": query,
+                    "variables": variables,
+                    "operationName": "GetShopProductsMenu",
+                }
+            ),
         )
+
         if response is None:
-            raise RuntimeError("Unexpected None response")
+            print("Warning: Unexpected None response from GraphQL API")
+            return []
         if not response.ok:
-            raise RuntimeError(
-                "Unexpected status code in response: %s", response.status
-            )
-        category_data = response.json()
+            print(f"Warning: GraphQL API returned status {response.status}")
+            print(f"Response: {response.text()[:500]}")
+            return []
+
+        data = response.json()
+        menu_items = data.get("data", {}).get("menuItems", {})
+        items = menu_items.get("items", [])
+
+        # Promotional and deal categories that only surface products already
+        # present in their primary categories -- scraping them would produce duplicates.
+        EXCLUDED_SLUGS = {
+            "down-down",              # Discounted items duplicated from real categories
+            "back-to-school",         # Seasonal promotional set
+            "bonus-credit-products",  # Loyalty/points deals, not regular stock
+        }
+
         categories = []
-        for category_obj in category_data["catalogGroupView"]:
-            cat_slug = category_obj["seoToken"]
-
-            if cat_slug in ["down-down", "back-to-school"]:
-                # Skip for now, expect duplicate products
+        for category_obj in items:
+            cat_slug = category_obj.get("seoToken")
+            if cat_slug in EXCLUDED_SLUGS:
                 continue
-
-            categories.append(category_obj)
+            categories.append(
+                {
+                    "id": category_obj.get("id"),
+                    "name": category_obj.get("name"),
+                    "seoToken": cat_slug,
+                    "catalogGroupView": category_obj.get("childItems", []),
+                }
+            )
         return categories
 
 
@@ -225,6 +330,11 @@ def get_canonical(item, today):
 
     if item["pricing"] is None:
         # No pricing information, can't process
+        return None
+
+    # Skip online-only products (not available in physical stores)
+    availability = item.get("availability", {}) or {}
+    if availability.get("storeAvailability") == "ONLINE_ONLY":
         return None
 
     match item["description"]:
@@ -355,13 +465,13 @@ def parse_str_unit(size):
         return units.parse_str_unit(size)
 
 
-def main(quick, save_path: pathlib.Path, category: str, page: int):
+def main(quick, save_path: pathlib.Path, category: str, page: int, request_delay: float = 2.0):
     """
     category: Slug or name or category to fetch, will fetch only that one.
     page: Page number to fetch.
     """
     save_path_dir = save_path.parent
-    coles = ColesScraper(store_id="0584", save_path_dir=save_path_dir, quick=quick)
+    coles = ColesScraper(store_id="0584", save_path_dir=save_path_dir, quick=quick, request_delay=request_delay)
     with coles:
         coles.start()
         categories = coles.get_categories()
@@ -390,12 +500,11 @@ def main(quick, save_path: pathlib.Path, category: str, page: int):
 
 
 def get_category_mapping(raw_categories):
-    "Take raw coles categories and turn them into standard format"
+    "Take raw coles categories and turn them into standard format (top-level only)"
     categories = []
     for main_category in raw_categories:
         main_cat_seo = main_category["seoToken"]
         main_cat_name = main_category["name"]
-        # Create entry for main category for products that aren't in any sub category
         categories.append(
             {
                 "id": main_category["id"],
@@ -404,20 +513,6 @@ def get_category_mapping(raw_categories):
                 "code": None,
             }
         )
-
-        sub_categories = main_category.get("catalogGroupView", [])
-        if not sub_categories:
-            raise RuntimeError("No subcats")
-        for sub_category in sub_categories:
-            sub_cat_seo = sub_category["seoToken"]
-            sub_cat_name = sub_category["name"]
-            sub_category_item = {
-                "id": sub_category["id"],
-                "description": f"{main_cat_name} > {sub_cat_name}",
-                "url": f"https://www.coles.com.au/browse/{main_cat_seo}/{sub_cat_seo}",
-                "code": None,
-            }
-            categories.append(sub_category_item)
 
     categories = hotprices_au.categories.merge_save_save_categories("coles", categories)
 
@@ -434,3 +529,6 @@ def get_category_from_map(category_map, raw_item):
 
 if __name__ == "__main__":
     main()
+
+
+

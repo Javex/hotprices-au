@@ -1,88 +1,189 @@
-# Hot Prices AU
+﻿# hotprices-au
 
-A terrible fork of the excellent open source project [heissepreise](https://github.com/badlogic/heissepreise). It fetches data from the duopoly of Australian grocery chains on a daily basis and makes them available through a web interface.
+Australian supermarket price scraper and price history tracker. Fetches product and pricing data from Coles and Woolworths on a daily basis, normalises it into a canonical format, and stores it for historical comparison.
 
-This project is very basic and partly contains a copy of the original code (for the frontend) and partly a re-implementation in Python (for the backend). The aim is to provie a similar service to Australians wanting to compare grocery prices and track the history of those prices. There no website yet.
+A fork of [heissepreise](https://github.com/badlogic/heissepreise), rewritten in Python for the Australian market.
 
-The backend consists of a command to scrape the raw data and a command to add the scraped data into the price history and normalise it. The frontend is largely copied from heissepreise, but adapted to local circumstances (translated, using `$` instead of `€`). Due to the excellent design by badlogic, the site is entirely static, so once compiled the backend can be any old webserver.
+---
 
 ## Requirements
 
--   Node.js (to compile the frontend)
--   Python (to scrape/analyse)
+- Python 3.11+
+- pip
 
-## Running
-
-### Development
-
----- TODO ----
-
-Install NodeJS, then run this in a shell of your choice.
+Install Python dependencies:
 
 ```bash
-git clone https://github.com/badlogic/heissepreise
-cd heissepreise
-mkdir -p data
-npm install
-npm run dev
+pip3 install -r requirements.txt
 ```
 
-The first time you run this, the data needs to be fetched from the stores. You should see log out put like this.
+Install Playwright browser binaries (required for Coles):
 
 ```bash
-Fetching data for date: 2023-05-23
-Fetched LIDL data, took 0.77065160000324 seconds
-Fetched MPREIS data, took 13.822936070203781 seconds
-Fetched SPAR data, took 17.865891209602356 seconds
-Fetched BILLA data, took 52.95784649944306 seconds
-Fetched HOFER data, took 64.83968291568756 seconds
-Fetched DM data, took 438.77065160000324 seconds
-Merged price history
-App listening on port 3000
+playwright install chromium
 ```
 
-Once the app is listening per default on port 3000, open <http://localhost:3000> in your browser.
+Install camoufox browser profile (required for Coles):
 
-Subsequent starts will fetch the data asynchronously, so you can start working immediately.
-
-### Production
-
-Install the dependencies as per above, then simply run:
-
-```
-git clone https://github.com/badlogic/heissepreise
-cd heissepreise
-node --dns-result-order=ipv4first /usr/bin/npm install --omit=dev
-npm run start
+```bash
+python3 -m camoufox fetch
 ```
 
-Once the app is listening per default on port 3000, open <http://localhost:3000> in your browser.
+---
 
-## Using data from heisse-preise.io
+## Usage
 
-You can also get the [raw data](https://heisse-preise.io/data/latest-canonical.json). The raw data is returned as a JSON array of items. An item has the following fields:
+All commands are run via `main.py`.
 
--   `store`: (`billa`, `spar`, `hofer`, `dm`, `lidl`, `mpreis`, ...)
--   `name`: the product name.
--   `price`: the current price in €.
--   `priceHistory`: an array of `{ date: "yyyy-mm-dd", price: number }` objects, sorted in descending order of date.
--   `unit`: unit the product is sold at. May be undefined.
--   `quantity`: quantity the product is sold at for the given price
--   `bio`: whether this product is classified as organic/"Bio"
+### Scrape a store
 
-If you run the project locally, you can use the data from the live site including the historical data as follows:
-
-```
-cd heisse-preise
-rm data/latest-canonical.*
-curl -o data/latest-canonical.json https://heisse-preise.io/data/latest-canonical.json
+```bash
+python3 main.py sync <store>
 ```
 
-Restart the server with either `npm run dev` or `npm run start`.
+`<store>` is one of: `coles`, `woolies`
 
-## Historical Data Credits
+**Options:**
 
-The live site at [heisse-preise.io](https://heisse-preise.io) feature historical data from:
+| Flag | Description |
+|------|-------------|
+| `--quick` | Fetch only the first category/page (useful for testing) |
+| `--category <name>` | Fetch a single category by name or slug |
+| `--page <n>` | Fetch a specific page within a category |
+| `--request-delay <seconds>` | Delay between page requests to avoid bot protection (default: `2.0`, set to `0` to disable) |
+| `--skip-existing` | Skip if output file for today already exists |
+| `--print-save-path` | Print the output file path and exit |
+| `--output-dir <path>` | Output directory (default: `./output`) |
 
--   [Dossier](https://www.dossier.at/dossiers/supermaerkte/quellen/anatomie-eines-supermarkts-die-methodik/)
--   [@h43z](https://h.43z.one), who runs [preisinflation.online](https://inflation.43z.one), another grocery price tracker.
+**Examples:**
+
+```bash
+# Full Coles scrape
+python3 main.py sync coles
+
+# Quick test (first category only)
+python3 main.py sync --quick coles
+
+# Scrape without delay (faster, higher bot-detection risk)
+python3 main.py sync coles --request-delay 0
+
+# Scrape a single Woolworths category
+python3 main.py sync woolies --category "Fruit & Veg"
+
+# Scrape one page of a Coles category
+python3 main.py sync coles --category "Pantry" --page 2
+```
+
+### Merge price history
+
+Transforms scraped data and merges it into the canonical price history file:
+
+```bash
+python3 main.py analysis
+```
+
+**Options:**
+
+| Flag | Description |
+|------|-------------|
+| `--store <store>` | Limit to one store |
+| `--day <YYYY-MM-DD>` | Process a specific date (default: today) |
+| `--compress` | Compress per-store output files |
+| `--history` | Rebuild full price history from all source files |
+
+**Examples:**
+
+```bash
+# Standard daily analysis
+python3 main.py analysis
+
+# Rebuild full Coles history from scratch
+python3 main.py analysis --store coles --history --compress
+```
+
+---
+
+## Output
+
+Scraped data is written to `./output/<store>/` as JSON files. After running analysis, the merged canonical price history is written to `./output/latest-canonical.json.gz`.
+
+### Canonical product format
+
+Each product in the canonical output has the following fields:
+
+| Field | Description |
+|-------|-------------|
+| `id` | Store product ID |
+| `name` | Full product name (brand + name) |
+| `price` | Current price in AUD |
+| `priceHistory` | Array of `{ date, price }` objects in descending date order |
+| `unit` | Unit of measure (e.g. `g`, `ml`, `ea`) |
+| `quantity` | Quantity for the given price |
+| `isWeighted` | Whether the product is sold by weight |
+
+---
+
+## Scraper notes
+
+### Coles
+
+The Coles scraper uses [camoufox](https://github.com/daijro/camoufox) (a stealth Firefox wrapper built on Playwright) to bypass bot protection. It navigates the Coles homepage on startup to capture a live API key from network traffic, then uses that key for subsequent API requests.
+
+Key behaviours:
+- **Top-level categories only** — subcategories are skipped to avoid duplicate products
+- **Online-only products excluded** — products not available in physical stores are filtered out
+- **Promotional categories excluded** — `down-down`, `back-to-school`, and `bonus-credit-products` are skipped as they duplicate products from real categories
+- **Request delay** — a configurable delay (default 2 seconds) is applied between page requests to reduce bot detection; set `--request-delay 0` to disable
+- **Auto-reset** — if bot protection is detected mid-scrape, the browser context resets and retries automatically (up to 5 times)
+
+### Woolworths
+
+The Woolworths scraper uses the public HTTP API directly, with no browser automation required.
+
+---
+
+## Docker
+
+```bash
+docker build -t hotprices-au .
+docker run hotprices-au sync --quick coles
+```
+
+---
+
+## Running tests
+
+```bash
+pip3 install -r requirements.dev.txt
+PYTHONPATH=. pytest -v tests
+```
+
+---
+
+## Project structure
+
+```
+hotprices_au/
+  sites/
+    coles.py        # Coles scraper (camoufox + Playwright)
+    woolies.py      # Woolworths scraper (HTTP API)
+  data/
+    coles-categories.json    # Saved category ID mappings
+    woolies-categories.json
+  analysis.py       # Price history merging and transformation
+  categories.py     # Category ID mapping persistence
+  output.py         # File save helpers
+  request.py        # Shared HTTP session setup
+  units.py          # Unit parsing (e.g. price per 100g)
+tests/              # pytest test suite
+main.py             # CLI entrypoint
+requirements.txt    # Runtime dependencies
+requirements.dev.txt
+Dockerfile
+```
+
+---
+
+## Credits
+
+Based on [heissepreise](https://github.com/badlogic/heissepreise) by [@badlogic](https://github.com/badlogic).

@@ -15,7 +15,7 @@ def main_sync(args):
             f"requested to skip if output file exists."
         )
     else:
-        sites.sites[args.store].main(args.quick, save_path, args.category, args.page)
+        sites.sites[args.store].main(args.quick, save_path, args.category, args.page, request_delay=args.request_delay)
 
 
 def main_analysis(args):
@@ -58,6 +58,13 @@ def main():
         help="Only fetch one particular page. Useful when also using the --category option.",
         type=int,
     )
+    sync_parser.add_argument(
+        "--request-delay",
+        type=float,
+        default=2.0,
+        dest="request_delay",
+        help="Delay in seconds between page requests to avoid bot protection. Set to 0 to disable. (default: 2.0)",
+    )
     sync_parser.add_argument("store", choices=list(sites.sites))
     sync_parser.set_defaults(func=main_sync)
 
@@ -83,6 +90,10 @@ def main():
 
     args = parser.parse_args()
 
+    if not hasattr(args, "func"):
+        parser.print_help()
+        return
+
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)
     else:
@@ -93,3 +104,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
