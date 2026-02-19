@@ -301,6 +301,8 @@ class ColesScraper:
             "down-down",              # Discounted items duplicated from real categories
             "back-to-school",         # Seasonal promotional set
             "bonus-credit-products",  # Loyalty/points deals, not regular stock
+            "liquorland",             # Alcohol
+            "tobacco",                # Tobacco
         }
 
         categories = []

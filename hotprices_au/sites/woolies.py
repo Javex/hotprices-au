@@ -1,5 +1,6 @@
 import math
 import re
+import time
 import requests
 import json
 
@@ -9,8 +10,9 @@ from hotprices_au.logging import logger
 
 
 class WooliesAPI:
-    def __init__(self, quick=False):
+    def __init__(self, quick=False, request_delay: float = 1.0):
         self.quick = quick
+        self.request_delay = request_delay
 
         self.session = request.get_base_session()
         self.session.headers = {
@@ -70,6 +72,8 @@ class WooliesAPI:
                 print(f'Page {request_data["pageNumber"]}')
             else:
                 print(f'Page {request_data["pageNumber"]}/{page_count}')
+            if self.request_delay > 0:
+                time.sleep(self.request_delay)
             response = self.session.post(
                 "https://www.woolworths.com.au/apis/ui/browse/category",
                 json=request_data,
@@ -126,6 +130,15 @@ def is_filtered_category(category_obj):
         "1_DEA3ED5",  # Home & Lifestyle
         "1_B863F57",  # Electronics
     ]
+    # Seasonal, promotional, or out-of-scope categories
+    cat_slug_skip = [
+        "halloween",            # Seasonal promotional set
+        "healthylife-pharmacy", # External partner, not standard Woolworths stock
+        "beer-wine-spirits",    # Alcohol
+    ]
+    cat_slug = category_obj.get("UrlFriendlyName", "")
+    if cat_slug in cat_slug_skip:
+        return True
 
     cat_id = category_obj["NodeId"]
     if cat_id in cat_id_skip:
@@ -161,6 +174,10 @@ def get_canonical(item, today):
 
     # Price is still None, can't do anything, skipping product
     if price is None:
+        return None
+
+    # Skip online-only products (not available in physical stores)
+    if item.get("IsOnlineOnly"):
         return None
 
     # Fix some particularly problematic products
@@ -206,10 +223,10 @@ def get_canonical(item, today):
     return result
 
 
-def main(quick, save_path, category_filter: str, page_filter: int):
+def main(quick, save_path, category_filter: str, page_filter: int, request_delay: float = 1.0):
     if category_filter is not None or page_filter is not None:
         raise NotImplementedError("Filters not implemented for woolies yet.")
-    woolies = WooliesAPI(quick=quick)
+    woolies = WooliesAPI(quick=quick, request_delay=request_delay)
     categories = woolies.get_categories()
     # categories = load_cache()
     for category_obj in categories:
@@ -251,7 +268,7 @@ def ensure_subcategories(raw_categories):
 
 
 def get_category_mapping(raw_categories):
-    "Raw woolies categories to standard format"
+    "Raw woolies categories to standard format (top-level only)"
     categories = []
     raw_categories = ensure_subcategories(raw_categories)
     for main_category in raw_categories:
@@ -270,22 +287,6 @@ def get_category_mapping(raw_categories):
                 "code": None,
             }
         )
-
-        sub_categories = main_category.get("Children", [])
-        if not sub_categories:
-            raise RuntimeError("No subcats")
-        for sub_category in sub_categories:
-            sub_cat_seo = sub_category["UrlFriendlyName"]
-            sub_cat_name = sub_category["Description"]
-            sub_category_id = f"{category_id}.{normalise_category_name(sub_cat_name)}"
-            sub_category_item = {
-                "id": sub_category["NodeId"],
-                "search_name": sub_cat_name,
-                "description": f"{main_cat_name} > {sub_cat_name}",
-                "url": f"https://www.woolworths.com.au/shop/browse/{main_cat_seo}/{sub_cat_seo}",
-                "code": None,
-            }
-            categories.append(sub_category_item)
 
     categories = hotprices_au.categories.merge_save_save_categories(
         "woolies", categories

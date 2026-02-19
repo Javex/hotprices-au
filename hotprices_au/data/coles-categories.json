@@ -54,12 +54,6 @@
     "code": "656"
   },
   {
-    "id": "85946",
-    "description": "Liquorland",
-    "url": "https://www.coles.com.au/browse/liquorland",
-    "code": "880"
-  },
-  {
     "id": "85471",
     "description": "Frozen",
     "url": "https://www.coles.com.au/browse/frozen",
@@ -94,11 +88,5 @@
     "description": "Home & Garden",
     "url": "https://www.coles.com.au/browse/home-garden",
     "code": null
-  },
-  {
-    "id": "17490",
-    "description": "Tobacco",
-    "url": "https://www.coles.com.au/browse/tobacco",
-    "code": "10100"
   }
 ]
