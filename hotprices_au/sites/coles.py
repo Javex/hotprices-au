@@ -303,6 +303,9 @@ class ColesScraper:
             "bonus-credit-products",  # Loyalty/points deals, not regular stock
             "liquorland",             # Alcohol
             "tobacco",                # Tobacco
+            "health-beauty",          # Non-core grocery, large category
+            "baby",                   # Non-core grocery
+            "pet",                    # Non-core grocery
         }
 
         categories = []

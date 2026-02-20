@@ -160,7 +160,7 @@ def is_filtered_category(category_obj):
         "pet",                  # Dominated by third-party Everyday Market products
         "personal-care",        # Dominated by third-party Everyday Market products
         "beauty",               # Dominated by third-party Everyday Market products
-        "international-foods",  # 83% overlap with Pantry, only 37 unique products
+
     }
 
     cat_slug = category_obj.get("UrlFriendlyName", "")
