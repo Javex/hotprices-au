@@ -191,9 +191,66 @@ class ColesScraper:
         return response
 
     def get_categories(self):
-        response = self.api.get(
-            f"https://www.coles.com.au/api/bff/products/categories?storeId={self.store_id}",
-            headers=self.extra_headers,
+        """Fetch categories via GraphQL API."""
+        query = """
+            query GetShopProductsMenu($storeId: BrandedId!, $withCampaignLinks: Boolean!, $campaignCount: Int) {
+                menuItems: productCategories(
+                    storeId: $storeId
+                    withCampaignLinks: $withCampaignLinks
+                    campaignCount: $campaignCount
+                ) {
+                    ...shopProductsMenuFields
+                }
+            }
+
+            fragment shopProductsMenuFields on ProductCategories {
+                restrictedIds: excludedCategoryIds
+                items: catalogGroupView {
+                    ...shopProductMenuItemFields
+                    childItems: catalogGroupView {
+                        ...shopProductMenuItemFields
+                        childItems: catalogGroupView {
+                            ...shopProductMenuItemFields
+                        }
+                    }
+                }
+            }
+
+            fragment shopProductMenuItemFields on ProductCategory {
+                ...catalogGroupFields
+                type
+            }
+
+            fragment catalogGroupFields on ProductCategory {
+                id
+                level
+                name
+                originalName
+                productCount
+                seoToken
+                type
+                subType
+            }
+        """
+        variables = {
+            "storeId": f"COL:{self.store_id}",
+            "withCampaignLinks": True,
+            "campaignCount": 0,
+        }
+
+        response = self.api.post(
+            "https://www.coles.com.au/api/graphql",
+            headers={
+                **self.extra_headers,
+                "Content-Type": "application/json",
+            },
+            data=json.dumps(
+                {
+                    "query": query,
+                    "variables": variables,
+                    "operationName": "GetShopProductsMenu",
+                }
+            ),
         )
         if response is None:
             raise RuntimeError("Unexpected None response")
@@ -201,16 +258,25 @@ class ColesScraper:
             raise RuntimeError(
                 "Unexpected status code in response: %s", response.status
             )
-        category_data = response.json()
+        data = response.json()
+        menu_items = data.get("data", {}).get("menuItems", {})
+        items = menu_items.get("items", [])
         categories = []
-        for category_obj in category_data["catalogGroupView"]:
+        for category_obj in items:
             cat_slug = category_obj["seoToken"]
 
             if cat_slug in ["down-down", "back-to-school"]:
                 # Skip for now, expect duplicate products
                 continue
 
-            categories.append(category_obj)
+            categories.append(
+                {
+                    "id": category_obj.get("id"),
+                    "name": category_obj.get("name"),
+                    "seoToken": cat_slug,
+                    "catalogGroupView": category_obj.get("childItems", []),
+                }
+            )
         return categories
 
 
