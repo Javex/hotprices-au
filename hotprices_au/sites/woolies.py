@@ -328,7 +328,7 @@ def get_category_mapping(raw_categories):
         "woolies", categories
     )
 
-    category_map = {c["search_name"]: c for c in categories}
+    category_map = {c["search_name"]: c for c in categories if c.get("search_name")}
     return category_map
 
 
