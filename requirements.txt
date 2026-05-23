@@ -1,3 +1,5 @@
 requests
 beautifulsoup4
 camoufox
+# See https://github.com/daijro/camoufox/issues/617
+playwright==1.58.0
