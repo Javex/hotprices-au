@@ -40,16 +40,8 @@ class WooliesAPI:
                 "isSpecial": false,
                 "isBundle": false,
                 "isMobile": false,
-                "filters": [
-                    {
-                        "Items": [
-                            {
-                                "Term": "Woolworths"
-                            }
-                        ],
-                        "Key": "SoldBy"
-                    }
-                ],
+                "isHideEverydayMarketProducts": true,
+                "filters": [],
                 "token": "",
                 "gpBoost": 0,
                 "isHideUnavailableProducts": false,
@@ -77,6 +69,17 @@ class WooliesAPI:
             response.raise_for_status()
             response_data = response.json()
             for bundle in response_data["Bundles"]:
+                # isHideEverydayMarketProducts should exclude marketplace
+                # products server-side; this is a safety net in case the API
+                # stops honouring it (like it did with the SoldBy filter).
+                products = [
+                    product
+                    for product in bundle["Products"]
+                    if not product.get("IsMarketProduct")
+                ]
+                if not products:
+                    continue
+                bundle["Products"] = products
                 yield bundle
 
             # Next page calculation
