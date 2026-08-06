@@ -96,6 +96,38 @@ class ColesScraper:
         # we can make sure we always end up in the correct place.
         locator = self.page.locator("script#__NEXT_DATA__")
         locator.wait_for(state="attached")
+
+        # Extract the script content and parse it
+        # For some reason other Playwright APIs don't work, e.g. just doing
+        # a JS eval to get the value, or using the Python Locator API to find
+        # the element. The only thing that seems to work is to do this JS
+        # eval.
+        runtime_config = self.page.evaluate("""
+            () => {
+                const scripts = document.querySelectorAll('script');
+                for (let s of scripts) {
+                    if (s.textContent && s.textContent.includes('__RUNTIME_CONFIG__')) {
+                        // Extract the JSON part after the equals sign
+                        const match = s.textContent.match(/window\\.__RUNTIME_CONFIG__=(.*)/);
+                        if (match) {
+                            // Remove trailing semicolon if present
+                            let jsonStr = match[1].trim();
+                            if (jsonStr.endsWith(';')) {
+                                jsonStr = jsonStr.slice(0, -1);
+                            }
+                            return JSON.parse(jsonStr);
+                        }
+                    }
+                }
+                return null;
+            }
+        """)
+        if runtime_config is None:
+            raise RuntimeError("Can't find __RUNTIME_CONFIG__")
+
+        self.api_key = runtime_config["BFF_API_SUBSCRIPTION_KEY"]
+        self.extra_headers["ocp-apim-subscription-key"] = self.api_key
+
         response_text = self.page.content()
         try:
             html = BeautifulSoup(response_text, features="html.parser")
@@ -113,8 +145,6 @@ class ColesScraper:
         except:
             output.save_response(response.text(), self.save_path_dir)
             raise
-        self.api_key = next_data_json["runtimeConfig"]["BFF_API_SUBSCRIPTION_KEY"]
-        self.extra_headers["ocp-apim-subscription-key"] = self.api_key
         for cookie in self.page.context.cookies():
             assert "name" in cookie
             assert "value" in cookie
